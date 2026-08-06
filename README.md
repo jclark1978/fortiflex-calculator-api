@@ -20,6 +20,21 @@ Users can build device lists with searchable product families, models, service b
 5. Open the extension, enter your FortiFlex API ID, client ID, and password, and choose **Save & test connection**.
 6. Open `webgui/index.html`, or load it through FabricBOM's plugin workflow.
 
+## Prerequisites: FortiFlex account and API credentials
+
+Before using the calculator, you need a FortiCloud account with FortiFlex activated and a FortiFlex API user. The connector uses that user's credential to load your available catalog and programs and to request read-only point estimates.
+
+1. Sign in to [Fortinet Support](https://support.fortinet.com), then go to **Services → IAM**.
+2. Create an active permission profile that includes access to the FortiFlex portal. Read-only permission is sufficient for this calculator; create or change operations require read/write permission.
+3. Create an API user and assign that permission profile.
+4. Choose **Download Credentials** and set a password. Fortinet downloads an encrypted CSV containing the API user's credentials.
+5. In the connector's settings page, enter the API ID/username and password from that CSV, plus the client ID supplied for your FortiFlex API flow. Fortinet's standard FortiFlex OAuth example uses `flexvm` as the client ID.
+6. Choose **Save & test connection**. The credential stays only in the local browser extension.
+
+Downloading API-user credentials resets that API user's prior security credentials, so update the connector if you download a replacement CSV. You do not need to manually acquire or paste an OAuth access token—the connector handles OAuth locally.
+
+See Fortinet's [FortiFlex API administration guide](https://docs.fortinet.com/document/fortiflex/26.2.1/administration-guide/fortiflex-api) for the authoritative API-user and IAM steps.
+
 ## Security model
 
 - No credentials, API keys, passwords, or OAuth tokens are embedded in this repository.
