@@ -11,7 +11,7 @@
   "name": "FortiFlex BOM Calculator",
   "category": "Licensing",
   "icon": "chart",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Build table-based FortiFlex point estimates with browser-local credentials"
 }
 </script>
@@ -81,8 +81,15 @@ table.bt .num { text-align:right; white-space:nowrap; font-variant-numeric:tabul
 table.bt input[type="number"] { min-width:62px; width:62px; }
 table.bt select { min-width:145px; }
 table.bt select.model { min-width:165px; }
+.select-col { width:42px; text-align:center !important; }
+.clear-selection-header { padding:0; border:0; background:transparent; color:inherit; font:inherit; font-weight:inherit; text-transform:inherit; letter-spacing:inherit; cursor:pointer; }
+.clear-selection-header:hover { color:var(--forti-red); }
+.row-select { width:15px; height:15px; accent-color:var(--forti-red); cursor:pointer; }
 
 .br { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-radius:2px; padding:2px 5px; white-space:nowrap; }
+.connector-badge-btn { border:0; cursor:default; font:inherit; }
+.connector-badge-btn.actionable { cursor:pointer; }
+.connector-badge-btn.actionable:hover { filter:brightness(.96); }
 .br-green { background:#EEFBF2; color:#1A7A3A; border:1px solid #A8DDB5; }
 .br-amber { background:#FFF8EE; color:#8A5800; border:1px solid #F5D9A0; }
 .br-gray { background:#F0F0F2; color:#6B7280; border:1px solid #D1D5DB; }
@@ -95,6 +102,24 @@ table.bt select.model { min-width:165px; }
 .import-icon { width:34px; height:34px; border-radius:3px; background:#FEF0EE; color:var(--forti-red); display:grid; place-items:center; font-size:18px; font-weight:700; flex-shrink:0; }
 .import-copy strong { display:block; font-size:12px; }
 .import-copy span { color:var(--c-text2); font-size:11px; }
+.unmatched-panel { display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#FEF0EE; border:1px solid #F5C6C2; border-radius:4px; color:#A62E24; }
+.unmatched-panel[hidden] { display:none; }
+.unmatched-icon { width:22px; height:22px; flex:0 0 22px; border-radius:50%; display:grid; place-items:center; background:#C0392B; color:#fff; font-size:13px; font-weight:700; }
+.unmatched-copy { min-width:0; flex:1; }
+.unmatched-copy strong { display:block; font-size:12px; }
+.unmatched-copy span { display:block; margin-top:1px; color:#A62E24; font-size:11px; }
+.unmatched-table { width:100%; margin-top:8px; border-collapse:collapse; background:#fff; color:var(--c-text); font-size:11px; }
+.unmatched-table th { padding:5px 7px; border:1px solid #F5C6C2; background:#FCE2DF; color:#A62E24; text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
+.unmatched-table td { padding:5px 7px; border:1px solid #F5D7D3; }
+.unmatched-table .count { width:72px; text-align:right; font-variant-numeric:tabular-nums; }
+.sort-header { display:inline-flex; align-items:center; gap:4px; padding:0; border:0; background:transparent; color:inherit; font:inherit; font-weight:inherit; text-transform:inherit; letter-spacing:inherit; cursor:pointer; white-space:nowrap; }
+.sort-header:after { content:'↕'; color:var(--c-textm); font-size:11px; line-height:1; }
+.sort-header[data-direction="asc"]:after { content:'↑'; color:var(--forti-red); }
+.sort-header[data-direction="desc"]:after { content:'↓'; color:var(--forti-red); }
+.sort-header:hover { color:var(--forti-red); }
+.paste-area { min-height:230px; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; line-height:1.45; }
+.paste-summary { min-height:38px; color:var(--c-text2); font-size:11px; }
+.paste-summary strong { color:var(--c-text); }
 
 .addon-picker { position:relative; min-width:188px; }
 .addon-trigger { width:100%; min-height:32px; padding:4px 24px 4px 5px; display:flex; align-items:center; flex-wrap:wrap; gap:3px; text-align:left; background:var(--c-white); border:1px solid var(--c-ib); border-radius:3px; cursor:pointer; }
@@ -127,6 +152,18 @@ table.bt select.model { min-width:165px; }
 .search-option[hidden] { display:none; }
 
 .table-ftr { padding:10px 12px; display:flex; align-items:center; gap:8px; border:1px solid var(--c-border); border-top:0; background:var(--c-sh); }
+.bulk-modal-copy { color:var(--c-text2); font-size:11px; }
+.bulk-modal-fields { display:flex; flex-direction:column; gap:12px; }
+.bulk-modal-fields .addon-picker { width:100%; }
+.bulk-mode-toggle { display:inline-flex; align-items:center; gap:6px; color:var(--c-text2); font-size:11px; }
+.bulk-mode-toggle span { font-weight:600; }
+.bulk-mode-toggle span:first-child { color:#3557A5; }
+.bulk-mode-toggle.remove span:first-child { color:var(--c-text2); }
+.bulk-mode-toggle.remove span:last-child { color:#C0392B; }
+.mode-slider { position:relative; width:34px; height:18px; padding:0; border:0; border-radius:10px; background:#91A6D9; cursor:pointer; transition:.15s; }
+.mode-slider:after { content:''; position:absolute; top:3px; left:3px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.22); transition:.15s; }
+.bulk-mode-toggle.remove .mode-slider { background:#E89B93; }
+.bulk-mode-toggle.remove .mode-slider:after { transform:translateX(16px); }
 .hint { color:var(--c-text2); font-size:11px; }
 .program-select { width:auto; min-width:180px; max-width:260px; padding:4px 26px 4px 7px; font-size:11px; }
 .api-status { display:flex; align-items:flex-start; gap:8px; padding:9px 12px; border:1px solid var(--c-border); border-radius:3px; background:var(--c-white); color:var(--c-text2); font-size:11px; }
@@ -166,6 +203,11 @@ table.bt select.model { min-width:165px; }
 .modal-ftr { padding:12px 18px; border-top:1px solid var(--c-border); display:flex; gap:8px; justify-content:flex-end; background:var(--c-sh); border-radius:0 0 5px 5px; }
 .local-note { display:flex; gap:10px; padding:11px; background:#EEF3FF; border:1px solid #B8CBF5; border-radius:3px; color:#3557A5; font-size:11px; }
 .local-note strong { display:block; margin-bottom:2px; }
+.install-note { display:none; padding:11px 13px; border:1px solid #B8CBF5; border-radius:3px; background:#EEF3FF; color:#3557A5; font-size:11px; }
+.install-note.on { display:block; }
+.install-note strong { display:block; margin-bottom:4px; }
+.install-note ol { margin:0 0 0 18px; }
+.install-note li + li { margin-top:2px; }
 .credential-actions { display:flex; align-items:center; gap:8px; padding-top:3px; }
 .cred-state { color:var(--c-text2); font-size:11px; }
 .field-note { color:var(--c-text2); font-size:10px; }
@@ -185,6 +227,7 @@ table.bt select.model { min-width:165px; }
   .fg, .estimate-grid { grid-template-columns:1fr; }
   .import-row { align-items:flex-start; }
   .bar-title { display:none; }
+  .unmatched-panel { flex-wrap:wrap; }
 }
 </style>
 </head>
@@ -195,22 +238,35 @@ table.bt select.model { min-width:165px; }
   <span class="bar-sub" id="catalog-label">Connect to load catalog</span>
   <div class="spacer"></div>
   <select class="fi program-select" id="program-select" aria-label="FortiFlex program" disabled><option>Select program</option></select>
-  <span class="br br-amber" id="credential-badge">Checking connector</span>
+  <button class="br br-amber connector-badge-btn" type="button" id="credential-badge">Checking connector</button>
   <button class="btn btn-sm bs" type="button" id="settings-btn">⚙ Connector settings</button>
   <button class="btn btn-sm bp" type="button" id="calculate-btn" disabled>Calculate BOM</button>
 </div>
 
 <div class="plugin-scroll">
   <div class="api-status loading" id="api-status" role="status" aria-live="polite">Looking for the FortiFlex API Connector extension…</div>
+  <div class="unmatched-panel" id="unmatched-panel" role="status" hidden>
+    <div class="unmatched-icon">!</div>
+    <div class="unmatched-copy">
+      <strong id="unmatched-title">Some device entries need attention</strong>
+      <span>They were not added because the current FortiFlex catalog did not provide one exact model match.</span>
+      <table class="unmatched-table" aria-label="Pasted device entries needing review">
+        <thead><tr><th>Pasted value</th><th class="count">Count</th><th>Match status</th></tr></thead>
+        <tbody id="unmatched-list"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-sm bs" type="button" id="review-import-btn">Review list</button>
+    <button class="btn btn-sm bs" type="button" id="clear-unmatched-btn">Dismiss</button>
+  </div>
   <div class="lc">
     <div class="lcb import-row">
       <div class="import-icon">⇧</div>
       <div class="import-copy">
         <strong>Start from a device list</strong>
-        <span>Import remains a workflow placeholder; build rows manually using the live FortiFlex catalog.</span>
+        <span>Paste models from a spreadsheet or inventory. Matching models are grouped into device-list rows with their total counts.</span>
       </div>
       <div class="spacer"></div>
-      <button class="btn bs" type="button" id="import-btn">Choose CSV or XLSX</button>
+      <button class="btn bs" type="button" id="import-btn">Paste device list</button>
     </div>
   </div>
 
@@ -225,8 +281,8 @@ table.bt select.model { min-width:165px; }
       <table class="bt" aria-label="FortiFlex bill of materials input">
         <thead>
           <tr>
-            <th>#</th><th>Product family</th><th>Count</th><th>Model / size</th><th>Bundle</th><th>Add-ons</th><th>Other options</th>
-            <th class="num">Points / device / day</th><th class="num">Line / day</th><th class="num">Line / 365 days</th><th></th>
+            <th class="select-col"><button class="clear-selection-header" type="button" id="clear-selection-btn" aria-label="Clear selected device lines">Select</button></th><th>#</th><th><button class="sort-header" type="button" data-sort-key="family">Product family</button></th><th><button class="sort-header" type="button" data-sort-key="count">Count</button></th><th><button class="sort-header" type="button" data-sort-key="model">Model / size</button></th><th><button class="sort-header" type="button" data-sort-key="bundle">Bundle</button></th><th><button class="sort-header" type="button" data-sort-key="addons">Add-ons</button></th>
+            <th class="num"><button class="sort-header" type="button" data-sort-key="perDevice">Daily points per device</button></th><th class="num"><button class="sort-header" type="button" data-sort-key="daily">Daily points total</button></th><th class="num"><button class="sort-header" type="button" data-sort-key="annual">Annual points total</button></th><th></th>
           </tr>
         </thead>
         <tbody id="bom-rows"></tbody>
@@ -234,6 +290,7 @@ table.bt select.model { min-width:165px; }
     </div>
     <div class="table-ftr">
       <button class="btn btn-sm bs" type="button" id="add-row-btn">+ Add line</button>
+      <button class="btn btn-sm bp" type="button" id="bulk-edit-btn" hidden>Bulk edit selected</button>
       <span class="hint">Catalog choices come from FortiFlex API v2 metadata.</span>
     </div>
   </div>
@@ -244,10 +301,36 @@ table.bt select.model { min-width:165px; }
       <div class="estimate-grid">
         <div class="metric"><span>Devices</span><strong id="device-total">0</strong></div>
         <div class="metric"><span>Product families</span><strong id="family-total">0</strong></div>
-        <div class="metric"><span>Points / day</span><strong id="daily-total">—</strong></div>
-        <div class="metric primary"><span>365-day estimate</span><strong id="year-total">—</strong></div>
+        <div class="metric"><span>Daily points total</span><strong id="daily-total">—</strong></div>
+        <div class="metric primary"><span>Annual points total</span><strong id="year-total">—</strong></div>
       </div>
-      <p class="disclaimer">Point estimate only—not a dollar quote. Annual points equal the API line total for the requested count × 365.</p>
+      <p class="disclaimer">Point estimate only—not a dollar quote. Annual points total equals the daily points total × 365.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="bulk-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-title">
+  <div class="modal-box">
+    <div class="modal-hdr"><h3 id="bulk-title">Bulk edit selected devices</h3><button class="modal-close" type="button" data-close-bulk aria-label="Close">×</button></div>
+    <div class="modal-body" id="bulk-modal-content"></div>
+    <div class="modal-ftr"><button class="btn bs" type="button" data-close-bulk>Cancel</button><button class="btn bp" type="button" id="apply-bulk-btn">Apply changes</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="import-modal" role="dialog" aria-modal="true" aria-labelledby="import-title">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3 id="import-title">Paste device list</h3>
+      <button class="modal-close" type="button" data-close-import aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="local-note"><span>⇧</span><div><strong>One device model per line works best</strong>You can paste a single spreadsheet column or tab/comma-separated cells. Exact catalog matches are combined into one row with the correct count. The current device list will be replaced.</div></div>
+      <textarea class="fi paste-area" id="device-list-input" spellcheck="false" placeholder="FortiGate-100F&#10;FortiGate-100F&#10;FortiSwitch-108F"></textarea>
+      <div class="paste-summary" id="paste-summary">Paste a list to preview the matching result.</div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn bs" type="button" data-close-import>Cancel</button>
+      <button class="btn bp" type="button" id="apply-import-btn" disabled>Replace device list</button>
     </div>
   </div>
 </div>
@@ -264,11 +347,20 @@ table.bt select.model { min-width:165px; }
         <div><strong>Credentials stay inside the browser extension</strong>The connector performs Fortinet OAuth and API requests outside the web page's CORS boundary. FabricBOM receives catalog and calculation results only—never your API ID, client ID, password, or OAuth token.</div>
       </div>
       <div class="api-status" id="connector-modal-state">Checking connector status…</div>
+      <div class="install-note" id="connector-install-note">
+        <strong>Install the connector</strong>
+        <ol>
+          <li>Choose <strong>Download connector</strong>, then unzip the download.</li>
+          <li>Open <span class="mono">chrome://extensions</span> or <span class="mono">edge://extensions</span> and enable <strong>Developer mode</strong>.</li>
+          <li>Choose <strong>Load unpacked</strong>, select the unzipped <span class="mono">browser-extension</span> folder, then refresh this calculator.</li>
+        </ol>
+      </div>
       <p class="field-note">Install the companion extension once on each Mac or PC. Its settings page provides Save &amp; test connection and Remove credential actions.</p>
     </div>
     <div class="modal-ftr">
       <button class="btn bs" type="button" data-close-modal>Cancel</button>
       <button class="btn bs" type="button" id="retry-connector-btn">Try again</button>
+      <a class="btn bp" id="download-connector-btn" href="https://github.com/jclark1978/fortiflex-calculator-api/releases/download/v0.1.4/fortiflex-api-connector-v0.1.4.zip" hidden>Download connector</a>
       <button class="btn bp" type="button" id="open-extension-btn">Open extension settings</button>
     </div>
   </div>
@@ -297,6 +389,10 @@ let connectorAvailable = false;
 let connectorConfigured = false;
 let calculationRunning = false;
 let toastTimer = null;
+let unmatchedEntries = [];
+let sortState = {key:'',direction:'asc'};
+let selectedRows = new Set();
+let bulkDraft = null;
 
 function esc(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -336,7 +432,7 @@ async function savePluginState() {
     await new Promise((resolve,reject) => {
       const tx = db.transaction('datasets','readwrite');
       const storedRows = rows.map(row => ({productTypeId:row.productTypeId,count:row.count,values:row.values}));
-      tx.objectStore('datasets').put({key:STATE_STORE_KEY,data:{rows:storedRows,selectedProgramSerial},updatedAt:Date.now()});
+      tx.objectStore('datasets').put({key:STATE_STORE_KEY,data:{rows:storedRows,selectedProgramSerial,unmatchedEntries},updatedAt:Date.now()});
       tx.oncomplete = resolve; tx.onerror = event => reject(event.target.error);
     });
   } catch { /* Standalone preview may not have FabricBOM's shared schema. */ }
@@ -427,14 +523,133 @@ function restoreRows(storedRows) {
     row.count=Math.max(1,parseInt(stored.count,10)||1);
     rolesFor(productType).params.forEach(parameter => {
       const incoming = stored.values && stored.values[parameter.parameterId];
-      if (incoming !== undefined) row.values[parameter.parameterId]=parameterType(parameter)==='MULTIVALUE' ? (Array.isArray(incoming)?incoming.map(String):[]) : String(incoming);
+      if (incoming !== undefined) {
+        if (parameterType(parameter)==='MULTIVALUE') row.values[parameter.parameterId]=Array.isArray(incoming)?incoming.map(String):[];
+        else if (parameterType(parameter)==='NUMERIC') {
+          const number=Number(incoming), min=parameter.minValue==null?-Infinity:Number(parameter.minValue), max=parameter.maxValue==null?Infinity:Number(parameter.maxValue);
+          row.values[parameter.parameterId]=Number.isFinite(number) && number>=min && number<=max ? String(incoming) : defaultValue(parameter);
+        } else row.values[parameter.parameterId]=String(incoming);
+      }
     });
     return row;
   }).filter(Boolean);
 }
+function normalizeDeviceName(value) {
+  return String(value == null ? '' : value).toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+function deviceNameVariants(value) {
+  const compact=normalizeDeviceName(value);
+  if (!compact) return [];
+  const variants=new Set([compact]);
+  const expanded=compact
+    .replace(/^FGT/,'FORTIGATE')
+    .replace(/^FSW/,'FORTISWITCH')
+    .replace(/^FAP/,'FORTIAP')
+    .replace(/^FEX/,'FORTIEXTENDER');
+  variants.add(expanded);
+  variants.add(expanded.replace(/^(FORTIGATE|FORTISWITCH|FORTIAP|FORTIEXTENDERVEHICLE|FORTIEXTENDER)0+(?=\d)/,'$1'));
+  return [...variants];
+}
+function modelCandidates() {
+  const candidates=[];
+  productTypes.forEach(productType => {
+    const model=rolesFor(productType).model;
+    if (!model || parameterType(model)!=='SINGLEVALUE') return;
+    (model.validValues||[]).forEach(item => {
+      const label=String(item.description||item.value||'');
+      const keys=new Set([...deviceNameVariants(label),...deviceNameVariants(item.value)]);
+      if (keys.size) candidates.push({productType,model,value:String(item.value),label,keys});
+    });
+  });
+  return candidates;
+}
+function findCatalogModel(rawValue,candidates) {
+  const inputKeys=deviceNameVariants(rawValue);
+  if (!inputKeys.length) return {kind:'unmatched'};
+  const matches=candidates.filter(candidate => inputKeys.some(key=>candidate.keys.has(key)));
+  const unique=new Map(matches.map(match=>[`${match.productType.productTypeId}:${match.model.parameterId}:${match.value}`,match]));
+  if (unique.size===1) return {kind:'match',candidate:[...unique.values()][0]};
+  if (unique.size>1) return {kind:'ambiguous'};
+  return {kind:'unmatched'};
+}
+function pasteDeviceValues(text) {
+  return String(text||'').split(/\r?\n/).flatMap(line=>line.split(/[\t,;]/).map(value=>value.trim()).filter(Boolean));
+}
+function summarizeImport(text) {
+  const values=pasteDeviceValues(text);
+  const candidates=modelCandidates();
+  let matched=0, ambiguous=0, unmatched=0;
+  values.forEach(value=>{
+    const result=findCatalogModel(value,candidates);
+    if (result.kind==='match') matched++;
+    else if (result.kind==='ambiguous') ambiguous++;
+    else unmatched++;
+  });
+  return {values,matched,ambiguous,unmatched};
+}
+function renderImportPreview() {
+  const input=document.getElementById('device-list-input');
+  const summary=document.getElementById('paste-summary');
+  const apply=document.getElementById('apply-import-btn');
+  if (!input.value.trim()) { summary.textContent='Paste a list to preview the matching result.'; apply.disabled=true; return; }
+  if (!productTypes.length) { summary.textContent='Connect to FortiFlex first so the live catalog can be used for matching.'; apply.disabled=true; return; }
+  const result=summarizeImport(input.value);
+  const parts=[`${result.matched} matching device ${result.matched===1?'entry':'entries'}`];
+  if (result.unmatched) parts.push(`${result.unmatched} unmatched`);
+  if (result.ambiguous) parts.push(`${result.ambiguous} needing a unique match`);
+  summary.innerHTML=`<strong>${esc(parts.join(' · '))}</strong><br>Matching entries will replace the current device list and be grouped by family and model.`;
+  apply.disabled=!result.matched;
+}
+function renderUnmatched() {
+  const panel=document.getElementById('unmatched-panel');
+  const title=document.getElementById('unmatched-title');
+  const list=document.getElementById('unmatched-list');
+  if (!unmatchedEntries.length) { panel.hidden=true; list.innerHTML=''; return; }
+  const total=unmatchedEntries.reduce((sum,item)=>sum+item.count,0);
+  title.textContent=`${total} device ${total===1?'entry needs':'entries need'} attention`;
+  list.innerHTML=unmatchedEntries.map(item=>`<tr><td>${esc(item.label)}</td><td class="count">${Number(item.count).toLocaleString()}</td><td>${item.reason==='ambiguous'?'Multiple catalog matches':'No exact catalog match'}</td></tr>`).join('');
+  panel.hidden=false;
+}
+function applyPastedDeviceList() {
+  const input=document.getElementById('device-list-input');
+  const candidates=modelCandidates();
+  const grouped=new Map();
+  const unmatched=new Map();
+  pasteDeviceValues(input.value).forEach(value=>{
+    const result=findCatalogModel(value,candidates);
+    if (result.kind==='match') {
+      const candidate=result.candidate;
+      const key=`${candidate.productType.productTypeId}:${candidate.model.parameterId}:${candidate.value}`;
+      const entry=grouped.get(key)||{candidate,count:0}; entry.count++; grouped.set(key,entry);
+    } else {
+      const key=`${normalizeDeviceName(value)}:${result.kind}`;
+      const entry=unmatched.get(key)||{label:value,count:0,reason:result.kind}; entry.count++; unmatched.set(key,entry);
+    }
+  });
+  rows=[...grouped.values()].map(entry=>{
+    const row=createRow(entry.candidate.productType);
+    row.values[entry.candidate.model.parameterId]=entry.candidate.value;
+    row.count=entry.count;
+    return row;
+  }).sort((a,b)=>{
+    const family=String(productTypeMap.get(a.productTypeId).name).localeCompare(String(productTypeMap.get(b.productTypeId).name));
+    if (family) return family;
+    const aModel=rolesFor(productTypeMap.get(a.productTypeId)).model;
+    const bModel=rolesFor(productTypeMap.get(b.productTypeId)).model;
+    return String(a.values[aModel.parameterId]).localeCompare(String(b.values[bModel.parameterId]));
+  });
+  unmatchedEntries=[...unmatched.values()];
+  selectedRows.clear();
+  closeImport(); renderUnmatched(); renderRows(); savePluginState();
+  const matchedCount=rows.reduce((sum,row)=>sum+row.count,0);
+  setStatus(`Added ${matchedCount} pasted device ${matchedCount===1?'entry':'entries'} as ${rows.length} grouped BOM line${rows.length===1?'':'s'}.`,'success');
+  if (unmatchedEntries.length) showToast(`${unmatchedEntries.reduce((sum,item)=>sum+item.count,0)} device entries need attention.`);
+}
 function searchableControl(options,value,target,label,extraClass='',showCodes=true) {
   const selected=options.find(option=>String(option.value)===String(value)) || options[0] || {value:'',label:''};
-  const targetAttributes=target.field
+  const targetAttributes=target.bulkParamId!==undefined
+    ? ` data-bulk-param-id="${esc(target.bulkParamId)}"`
+    : target.field
     ? ` data-target-field="${esc(target.field)}"`
     : ` data-target-param-id="${esc(target.parameterId)}"`;
   const choices=options.map(option=>{
@@ -485,6 +700,135 @@ function extrasPicker(row,productType) {
   const fields=extras.map(parameter=>`<div class="fg1"><label class="fl">${esc(parameter.name)}</label>${parameterControl(parameter,row.values[parameter.parameterId])}</div>`).join('');
   return `<div class="param-picker"><button class="param-trigger" type="button">${extras.length} option${extras.length===1?'':'s'}</button><div class="param-menu">${fields}</div></div>`;
 }
+function parameterLabel(productType,parameter,value) {
+  if (!parameter) return '';
+  if (parameterType(parameter)==='MULTIVALUE') return (Array.isArray(value)?value:[]).map(item=>parameterLabel(productType,{...parameter,type:'SINGLEVALUE'},item)).join(', ');
+  const match=(parameter.validValues||[]).find(item=>String(item.value)===String(value));
+  return String(match ? (match.description||match.value) : (value||''));
+}
+function rowSortValue(row,key) {
+  const productType=productTypeMap.get(Number(row.productTypeId));
+  if (!productType) return '';
+  const roles=rolesFor(productType);
+  if (key==='family') return String(productType.name||'');
+  if (key==='count') return Number(row.count)||0;
+  if (key==='model') return parameterLabel(productType,roles.model,row.values[roles.model&&roles.model.parameterId]);
+  if (key==='bundle') return parameterLabel(productType,roles.bundle,row.values[roles.bundle&&roles.bundle.parameterId]);
+  if (key==='addons') return roles.addons.map(parameter=>parameterLabel(productType,parameter,row.values[parameter.parameterId])).join(', ');
+  if (key==='extras') return roles.extras.map(parameter=>parameterLabel(productType,parameter,row.values[parameter.parameterId])).join(', ');
+  if (key==='perDevice') return row.result ? Number(row.result.perDevice) : -Infinity;
+  if (key==='daily') return row.result ? Number(row.result.current) : -Infinity;
+  if (key==='annual') return row.result ? Number(row.result.current)*365 : -Infinity;
+  return '';
+}
+function sortRows(key) {
+  const direction=sortState.key===key && sortState.direction==='asc' ? 'desc' : 'asc';
+  sortState={key,direction};
+  const multiplier=direction==='asc'?1:-1;
+  rows.sort((a,b)=>{
+    const left=rowSortValue(a,key), right=rowSortValue(b,key);
+    if (typeof left==='number' && typeof right==='number') return (left-right)*multiplier;
+    return String(left).localeCompare(String(right),undefined,{numeric:true,sensitivity:'base'})*multiplier;
+  });
+  renderRows(); savePluginState();
+}
+function renderSortHeaders() {
+  document.querySelectorAll('.sort-header').forEach(button=>{
+    const active=button.dataset.sortKey===sortState.key;
+    if (active) button.dataset.direction=sortState.direction;
+    else delete button.dataset.direction;
+    button.setAttribute('aria-label',`${button.textContent.trim()}: ${active ? `sorted ${sortState.direction==='asc'?'ascending':'descending'}; activate to reverse` : 'activate to sort ascending'}`);
+  });
+}
+function activeSelectedRows() {
+  selectedRows.forEach(row=>{ if (!rows.includes(row)) selectedRows.delete(row); });
+  return rows.filter(row=>selectedRows.has(row));
+}
+function selectedFamilyId() {
+  const selected=activeSelectedRows();
+  return selected.length ? Number(selected[0].productTypeId) : null;
+}
+function toggleRowSelection(index,checked) {
+  const row=rows[index]; if (!row) return;
+  const familyId=selectedFamilyId();
+  if (checked && familyId!==null && familyId!==Number(row.productTypeId)) {
+    showToast('Bulk selection is limited to one product family at a time.');
+    renderRows(); return;
+  }
+  if (checked) selectedRows.add(row); else selectedRows.delete(row);
+  renderRows();
+}
+function bulkParameterControl(parameter) {
+  const value=bulkDraft.values[parameter.parameterId]||'';
+  if (parameterType(parameter)==='SINGLEVALUE') {
+    const options=[{value:'',label:'Leave unchanged'},...(parameter.validValues||[]).map(item=>({value:String(item.value),label:String(item.description||item.value)}))];
+    return searchableControl(options,value,{bulkParamId:parameter.parameterId},parameter.name,'',true);
+  }
+  if (parameterType(parameter)==='NUMERIC') return `<input class="fi" type="number" data-bulk-param-id="${parameter.parameterId}" value="${esc(value)}" placeholder="Leave unchanged" aria-label="${esc(parameter.name)}">`;
+  return '<span class="placeholder">Not applicable</span>';
+}
+function bulkAddonPicker(productType) {
+  const addonParams=rolesFor(productType).addons;
+  if (!addonParams.length) return '<span class="placeholder">None available</span>';
+  const choices=addonParams.map(parameter => (parameter.validValues||[]).map(item => {
+    const key=`${parameter.parameterId}:${item.value}`;
+    const checked=bulkDraft.addons.has(key);
+    const label=String(item.description||item.value);
+    return `<label data-addon-choice data-search="${esc(`${label} ${item.value} ${parameter.name||''}`.toLowerCase())}"><input type="checkbox" data-bulk-draft-addon data-param-id="${parameter.parameterId}" data-param-value="${esc(item.value)}"${checked?' checked':''}><span>${esc(label)}<small>${esc(`${item.value}${parameter.name?` · ${parameter.name}`:''}`)}</small></span></label>`;
+  }).join('')).join('');
+  const selected=bulkDraft.addons.size ? `<span class="chip">${bulkDraft.addons.size} selected</span>` : '<span class="placeholder">Choose add-ons</span>';
+  return `<div class="addon-picker"><button class="addon-trigger" type="button">${selected}</button><div class="addon-menu"><input class="menu-search addon-search" type="search" autocomplete="off" placeholder="Search add-ons…" aria-label="Search add-ons">${choices||'<span class="placeholder">No values available</span>'}<div class="menu-empty" data-addon-empty hidden>No matching add-ons</div></div></div>`;
+}
+function bulkExtrasPicker(productType) {
+  const extras=rolesFor(productType).extras;
+  if (!extras.length) return '<span class="placeholder">None</span>';
+  const fields=extras.map(parameter=>`<div class="fg1"><label class="fl">${esc(parameter.name)}</label>${bulkParameterControl(parameter)}</div>`).join('');
+  return `<div class="param-picker"><button class="param-trigger" type="button">${extras.length} option${extras.length===1?'':'s'}</button><div class="param-menu">${fields}</div></div>`;
+}
+function openBulkEditor() {
+  const selected=activeSelectedRows();
+  if (selected.length<2) return;
+  bulkDraft={productTypeId:Number(selected[0].productTypeId),values:{},addons:new Set(),addonMode:'add'};
+  renderBulkModal();
+  document.getElementById('bulk-modal').classList.add('on');
+}
+function closeBulkEditor() { document.getElementById('bulk-modal').classList.remove('on'); bulkDraft=null; }
+function renderBulkModal() {
+  if (!bulkDraft) return;
+  const selected=activeSelectedRows();
+  const productType=productTypeMap.get(bulkDraft.productTypeId);
+  const roles=rolesFor(productType);
+  document.getElementById('bulk-title').textContent=`Bulk edit ${selected.length} ${productType.name||'device'} line${selected.length===1?'':'s'}`;
+  document.getElementById('bulk-modal-content').innerHTML=`<p class="bulk-modal-copy">Changes apply to every selected line. Leave a field unchanged unless you want to apply a new value.</p><div class="bulk-modal-fields">
+    ${roles.bundle?`<div class="fg1"><label class="fl">Bundle</label>${bulkParameterControl(roles.bundle)}</div>`:''}
+    ${roles.addons.length?`<div class="fg1"><label class="fl">Add-ons</label>${bulkAddonPicker(productType)}<div class="bulk-mode-toggle${bulkDraft.addonMode==='remove'?' remove':''}" id="bulk-addon-mode"><span>Add</span><button class="mode-slider" type="button" role="switch" aria-checked="${bulkDraft.addonMode==='remove'}" aria-label="Switch between adding and removing selected add-ons"></button><span>Remove</span></div></div>`:''}
+  </div>`;
+}
+function applyBulkChanges() {
+  const selected=activeSelectedRows();
+  if (!bulkDraft || selected.length<2) { closeBulkEditor(); return; }
+  const productType=productTypeMap.get(bulkDraft.productTypeId);
+  const changedValues=Object.entries(bulkDraft.values).filter(([,value])=>value!=='');
+  selected.forEach(row=>{
+    changedValues.forEach(([parameterId,value])=>{ row.values[Number(parameterId)]=String(value); });
+    bulkDraft.addons.forEach(key=>{
+      const [parameterId,...valueParts]=key.split(':'); const value=valueParts.join(':');
+      const current=Array.isArray(row.values[Number(parameterId)])?row.values[Number(parameterId)].map(String):[];
+      row.values[Number(parameterId)]=bulkDraft.addonMode==='remove' ? current.filter(item=>item!==value) : [...new Set([...current,value])];
+    });
+    invalidateRow(row);
+  });
+  closeBulkEditor(); renderRows(); savePluginState();
+  showToast(`Changes applied to ${selected.length} selected ${productType.name||'device'} lines.`);
+}
+function updateBulkEditButton() {
+  const button=document.getElementById('bulk-edit-btn');
+  const selected=activeSelectedRows();
+  const ready=selected.length>1;
+  button.hidden=!ready;
+  button.textContent=`Bulk edit ${selected.length} selected`;
+  button.disabled=!ready || calculationRunning;
+}
 function renderRows() {
   const tbody=document.getElementById('bom-rows');
   if (!productTypes.length) {
@@ -498,11 +842,11 @@ function renderRows() {
       const familyOptions=productTypes.map(item=>({value:String(item.productTypeId),label:String(item.name)}));
       const state=row.calculating?'Calculating…':(row.error?esc(row.error):'');
       return `<tr class="data-row${index%2?' bt-even':''}" data-index="${index}">
-        <td>${index+1}</td><td>${searchableControl(familyOptions,row.productTypeId,{field:'productTypeId'},'Product family','',false)}</td>
+        <td class="select-col"><input class="row-select" type="checkbox" data-select-row aria-label="Select line ${index+1} for bulk editing"${selectedRows.has(row)?' checked':''}></td><td>${index+1}</td><td>${searchableControl(familyOptions,row.productTypeId,{field:'productTypeId'},'Product family','',false)}</td>
         <td><input class="fi" type="number" min="1" step="1" data-field="count" value="${row.count}"></td>
         <td>${parameterControl(roles.model,row.values[roles.model&&roles.model.parameterId],'model')}</td>
         <td>${parameterControl(roles.bundle,row.values[roles.bundle&&roles.bundle.parameterId])}</td>
-        <td>${addonPicker(row,productType)}</td><td>${extrasPicker(row,productType)}</td>
+        <td>${addonPicker(row,productType)}</td>
         <td class="num">${row.result?formatPoints(row.result.perDevice):'—'}</td>
         <td class="num">${row.result?formatPoints(row.result.current):'—'}${state?`<span class="row-state${row.error?' error':''}">${state}</span>`:''}</td>
         <td class="num">${row.result?formatPoints(row.result.current*365):'—'}</td>
@@ -512,7 +856,7 @@ function renderRows() {
   }
   const badge=document.getElementById('line-badge');
   badge.textContent=rows.length; badge.className='cnt-badge'+(rows.length?'':' zero');
-  renderSummary(); updateControls();
+  renderSummary(); updateBulkEditButton(); renderSortHeaders(); updateControls();
 }
 function renderSummary() {
   const devices=rows.reduce((sum,row)=>sum+Number(row.count),0);
@@ -527,6 +871,7 @@ function updateControls() {
   document.getElementById('add-row-btn').disabled=!productTypes.length || calculationRunning;
   document.getElementById('calculate-btn').disabled=!productTypes.length || !selectedProgramSerial || !rows.length || calculationRunning;
   document.getElementById('program-select').disabled=!programs.length || calculationRunning;
+  document.getElementById('import-btn').disabled=!productTypes.length || calculationRunning;
 }
 function invalidateRow(row) { row.result=null; row.error=''; row.calculating=false; }
 function buildParameters(row,productType) {
@@ -536,7 +881,8 @@ function buildParameters(row,productType) {
     if (parameterType(parameter)==='MULTIVALUE') {
       (Array.isArray(value)?value:[]).forEach(item=>parameters.push({id:Number(parameter.parameterId),value:String(item)}));
     } else if (value!=='' && value!==null && value!==undefined) {
-      parameters.push({id:Number(parameter.parameterId),value:String(value)});
+      const optionalZero=parameterType(parameter)==='NUMERIC' && Number(parameter.minValue)===0 && Number(value)===0;
+      if (!optionalZero) parameters.push({id:Number(parameter.parameterId),value:String(value)});
     }
   });
   return parameters;
@@ -585,7 +931,7 @@ function renderPrograms() {
   updateControls();
 }
 async function connectAndLoad() {
-  const stateToRestore=pendingState || {rows:rows.map(row=>({productTypeId:row.productTypeId,count:row.count,values:row.values})),selectedProgramSerial};
+  const stateToRestore=pendingState || {rows:rows.map(row=>({productTypeId:row.productTypeId,count:row.count,values:row.values})),selectedProgramSerial,unmatchedEntries};
   setStatus('Loading the live FortiFlex catalog through the connector…','loading');
   document.getElementById('catalog-label').textContent='Loading catalog…';
   try {
@@ -598,12 +944,13 @@ async function connectAndLoad() {
     productTypeMap=new Map(productTypes.map(item=>[Number(item.productTypeId),item]));
     programs=Array.isArray(programData.programs)?programData.programs.filter(program=>program.serialNumber):[];
     selectedProgramSerial=stateToRestore.selectedProgramSerial||selectedProgramSerial;
+    unmatchedEntries=Array.isArray(stateToRestore.unmatchedEntries)?stateToRestore.unmatchedEntries.filter(item=>item&&item.label):unmatchedEntries;
     rows=restoreRows(stateToRestore.rows);
     if (!rows.length) {
       const preferred=productTypes.find(item=>/FortiGate Hardware/i.test(item.name||'')) || productTypes[0];
       rows=[createRow(preferred)];
     }
-    pendingState=null; renderPrograms(); renderRows(); await savePluginState();
+    pendingState=null; renderPrograms(); renderUnmatched(); renderRows(); await savePluginState();
     connectorAvailable=true; connectorConfigured=true; updateConnectorUI();
     document.getElementById('catalog-label').textContent=`${productTypes.length} product families`;
     setStatus(programs.length?`Connected to FortiFlex. Loaded ${productTypes.length} product families and ${programs.length} program${programs.length===1?'':'s'}.`:`Catalog loaded, but this account returned no FortiFlex programs. Calculation is unavailable.` ,programs.length?'success':'error');
@@ -621,20 +968,27 @@ async function connectAndLoad() {
 function updateConnectorUI() {
   const badge=document.getElementById('credential-badge');
   const modalState=document.getElementById('connector-modal-state');
+  const download=document.getElementById('download-connector-btn');
+  const openSettingsButton=document.getElementById('open-extension-btn');
+  const installNote=document.getElementById('connector-install-note');
+  badge.classList.remove('actionable'); badge.disabled=true; badge.title='';
   if (!connectorAvailable) {
-    badge.textContent='Connector missing'; badge.className='br br-amber';
+    badge.textContent='Connector missing'; badge.className='br br-amber connector-badge-btn actionable'; badge.disabled=false; badge.title='Open connector settings';
     modalState.textContent=location.protocol==='file:'
       ? 'This calculator is open as a local file. Reload extension version 0.1.4, enable “Allow access to file URLs” on its Details page, refresh this tab, then choose Try again.'
       : 'The FortiFlex API Connector extension was not detected. Install or enable it, refresh this page, then choose Try again.';
     modalState.className='api-status error';
+    download.hidden=false; openSettingsButton.hidden=true; installNote.classList.add('on');
   } else if (!connectorConfigured) {
-    badge.textContent='API not configured'; badge.className='br br-amber';
+    badge.textContent='API not configured'; badge.className='br br-amber connector-badge-btn';
     modalState.textContent='The connector is installed, but no FortiFlex credential is saved. Open extension settings to continue.';
     modalState.className='api-status';
+    download.hidden=true; openSettingsButton.hidden=false; installNote.classList.remove('on');
   } else {
-    badge.textContent='Connector ready'; badge.className='br br-green';
+    badge.textContent='Connector ready'; badge.className='br br-green connector-badge-btn';
     modalState.textContent='The connector is installed and has a browser-local FortiFlex credential.';
     modalState.className='api-status success';
+    download.hidden=true; openSettingsButton.hidden=false; installNote.classList.remove('on');
   }
 }
 async function detectConnector(connect=true) {
@@ -650,6 +1004,13 @@ async function detectConnector(connect=true) {
 }
 function openSettings() { closeFloatingMenus(); document.getElementById('settings-modal').classList.add('on'); updateConnectorUI(); }
 function closeSettings() { document.getElementById('settings-modal').classList.remove('on'); }
+function openImport() {
+  closeFloatingMenus();
+  document.getElementById('import-modal').classList.add('on');
+  renderImportPreview();
+  setTimeout(()=>document.getElementById('device-list-input').focus(),0);
+}
+function closeImport() { document.getElementById('import-modal').classList.remove('on'); }
 async function openExtensionSettings() {
   try { await connectorRequest('openOptions',null,3000); }
   catch (error) { setStatus(friendlyError(error,'opening connector settings'),'error'); openSettings(); }
@@ -723,8 +1084,14 @@ function filterAddonOptions(picker,term) {
 }
 function selectSearchOption(option) {
   const picker=option.closest('.search-select'), tr=picker&&picker.closest('tr[data-index]');
-  if (!picker || !tr) return;
-  const index=Number(tr.dataset.index), value=String(option.dataset.optionValue||'');
+  if (!picker) return;
+  const value=String(option.dataset.optionValue||'');
+  if (picker.dataset.bulkParamId!==undefined && bulkDraft) {
+    bulkDraft.values[Number(picker.dataset.bulkParamId)]=value;
+    renderBulkModal(); return;
+  }
+  if (!tr) return;
+  const index=Number(tr.dataset.index);
   if (picker.dataset.targetField==='productTypeId') {
     const productType=productTypeMap.get(Number(value));
     if (!productType) return;
@@ -739,7 +1106,15 @@ function selectSearchOption(option) {
 
 document.addEventListener('click', event => {
   if (event.target.closest('[data-close-modal]')) { closeSettings(); return; }
+  if (event.target.closest('[data-close-import]')) { closeImport(); return; }
+  if (event.target.closest('[data-close-bulk]')) { closeBulkEditor(); return; }
   if (event.target === document.getElementById('settings-modal')) { closeSettings(); return; }
+  if (event.target === document.getElementById('import-modal')) { closeImport(); return; }
+  if (event.target === document.getElementById('bulk-modal')) { closeBulkEditor(); return; }
+  const addonModeToggle=event.target.closest('#bulk-addon-mode .mode-slider');
+  if (addonModeToggle && bulkDraft) { bulkDraft.addonMode=bulkDraft.addonMode==='add'?'remove':'add'; renderBulkModal(); return; }
+  const sortHeader=event.target.closest('.sort-header');
+  if (sortHeader) { closeFloatingMenus(); sortRows(sortHeader.dataset.sortKey); return; }
   const searchOption=event.target.closest('.search-option');
   if (searchOption) { selectSearchOption(searchOption); return; }
   const searchToggle=event.target.closest('.search-select-toggle');
@@ -756,7 +1131,7 @@ document.addEventListener('click', event => {
   }
   const remove = event.target.closest('[data-remove]');
   if (remove) {
-    rows.splice(Number(remove.closest('tr').dataset.index),1); renderRows(); savePluginState(); return;
+    const index=Number(remove.closest('tr').dataset.index); selectedRows.delete(rows[index]); rows.splice(index,1); renderRows(); savePluginState(); return;
   }
   const trigger = event.target.closest('.addon-trigger');
   if (trigger) {
@@ -780,6 +1155,8 @@ document.addEventListener('click', event => {
   }
 });
 document.addEventListener('input',event=>{
+  if (event.target.id==='device-list-input') { renderImportPreview(); return; }
+  if (event.target.dataset.bulkParamId!==undefined && bulkDraft) { bulkDraft.values[Number(event.target.dataset.bulkParamId)]=event.target.value; return; }
   if (event.target.matches('.search-select-input')) {
     const picker=event.target.closest('.search-select');
     openFloatingPicker(picker); filterSearchOptions(picker,event.target.value); return;
@@ -800,10 +1177,19 @@ document.addEventListener('change', event => {
   if (event.target.id==='program-select') {
     selectedProgramSerial=event.target.value; rows.forEach(invalidateRow); renderRows(); savePluginState(); return;
   }
+  if (event.target.dataset.bulkDraftAddon!==undefined && bulkDraft) {
+    const key=`${event.target.dataset.paramId}:${event.target.dataset.paramValue}`;
+    if (event.target.checked) bulkDraft.addons.add(key); else bulkDraft.addons.delete(key);
+    const trigger=event.target.closest('.addon-picker').querySelector('.addon-trigger');
+    trigger.innerHTML=bulkDraft.addons.size?`<span class="chip">${bulkDraft.addons.size} selected</span>`:'<span class="placeholder">Choose add-ons</span>';
+    return;
+  }
   const tr = event.target.closest('tr[data-index]'); if (!tr) return;
   const index = Number(tr.dataset.index), field = event.target.dataset.field;
+  if (event.target.dataset.selectRow!==undefined) { toggleRowSelection(index,event.target.checked); return; }
   if (field==='productTypeId') {
-    const count=rows[index].count, productType=productTypeMap.get(Number(event.target.value));
+    const previousRow=rows[index], count=previousRow.count, productType=productTypeMap.get(Number(event.target.value));
+    selectedRows.delete(previousRow);
     rows[index]=createRow(productType); rows[index].count=count;
   } else if (field==='count') {
     rows[index].count=Math.max(1,parseInt(event.target.value,10)||1); invalidateRow(rows[index]);
@@ -822,13 +1208,20 @@ document.addEventListener('change', event => {
 });
 
 document.getElementById('settings-btn').addEventListener('click',openSettings);
+document.getElementById('credential-badge').addEventListener('click',()=>{ if (!connectorAvailable) openSettings(); });
 document.getElementById('add-row-btn').addEventListener('click',() => {
   if (!productTypes.length) return;
   rows.push(createRow(productTypes[0]));
   renderRows(); savePluginState();
 });
 document.getElementById('calculate-btn').addEventListener('click',calculateAll);
-document.getElementById('import-btn').addEventListener('click',() => showToast('Spreadsheet import is not implemented yet; add rows manually.'));
+document.getElementById('import-btn').addEventListener('click',openImport);
+document.getElementById('apply-import-btn').addEventListener('click',applyPastedDeviceList);
+document.getElementById('bulk-edit-btn').addEventListener('click',openBulkEditor);
+document.getElementById('apply-bulk-btn').addEventListener('click',applyBulkChanges);
+document.getElementById('clear-selection-btn').addEventListener('click',()=>{ selectedRows.clear(); renderRows(); });
+document.getElementById('review-import-btn').addEventListener('click',openImport);
+document.getElementById('clear-unmatched-btn').addEventListener('click',()=>{ unmatchedEntries=[]; renderUnmatched(); savePluginState(); });
 document.getElementById('open-extension-btn').addEventListener('click',openExtensionSettings);
 document.getElementById('retry-connector-btn').addEventListener('click',async()=>{
   const button=document.getElementById('retry-connector-btn'); button.disabled=true; button.textContent='Checking…';
@@ -852,7 +1245,7 @@ document.addEventListener('keydown',event => {
       return;
     }
   }
-  if (event.key === 'Escape') { closeFloatingMenus(); closeSettings(); }
+  if (event.key === 'Escape') { closeFloatingMenus(); closeSettings(); closeImport(); closeBulkEditor(); }
 });
 window.addEventListener('resize',()=>closeFloatingMenus());
 document.querySelector('.plugin-scroll').addEventListener('scroll',()=>closeFloatingMenus(),{passive:true});
@@ -860,6 +1253,8 @@ document.querySelector('.plugin-scroll').addEventListener('scroll',()=>closeFloa
 (async function init() {
   clearLegacyCredentialStore();
   pendingState=await loadPluginState();
+  unmatchedEntries=Array.isArray(pendingState&&pendingState.unmatchedEntries)?pendingState.unmatchedEntries.filter(item=>item&&item.label):[];
+  renderUnmatched();
   updateConnectorUI(); renderPrograms(); renderRows();
   await detectConnector(true);
 })();
