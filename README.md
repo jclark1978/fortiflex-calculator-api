@@ -33,7 +33,7 @@ Before using the calculator, you need a FortiCloud account with FortiFlex activa
 
 Downloading API-user credentials resets that API user's prior security credentials, so update the connector if you download a replacement CSV. You do not need to manually acquire or paste an OAuth access token—the connector handles OAuth locally.
 
-See Fortinet's [FortiFlex API administration guide](https://docs.fortinet.com/document/fortiflex/26.2.1/administration-guide/fortiflex-api) for the authoritative API-user and IAM steps.
+See Fortinet's [FortiFlex API administration guide](https://docs.fortinet.com/document/flex-vm/26.2.1/administration-guide/463716/fortiflex-api) for the authoritative API-user and IAM steps.
 
 ## Security model
 
