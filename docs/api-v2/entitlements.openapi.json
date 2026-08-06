@@ -1,0 +1,1036 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "",
+        "version": "V1-oas3",
+        "title": "FortiFlex API V2.0"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/support.fortinet.com\/es\/api\/fortiflex\/v2",
+            "description": "Production server for FortiFlex external API"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "commonResponseFields": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "programArray": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/programArrayItem"
+                }
+            },
+            "programArrayItem": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer"
+                    },
+                    "serialNumber": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "hasSupportCoverage": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Entitlements",
+            "description": "APIs to work with FortiFlex Entitlements"
+        }
+    ],
+    "definitions": {
+        "commonResponseFields": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "entitlementsArray": {
+            "type": "object",
+            "properties": {
+                "entitlements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/entitlementItem"
+                    }
+                }
+            }
+        },
+        "entitlementItem": {
+            "type": "object",
+            "properties": {
+                "serialNumber": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "configId": {
+                    "type": "integer"
+                },
+                "accountId": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "endDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "tokenStatus": {
+                    "type": "string"
+                }
+            }
+        },
+        "entitlementPointsArray": {
+            "type": "object",
+            "properties": {
+                "entitlements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/entitlementPointItem"
+                    }
+                }
+            }
+        },
+        "entitlementPointItem": {
+            "type": "object",
+            "properties": {
+                "serialNumber": {
+                    "type": "string"
+                },
+                "accountId": {
+                    "type": "integer"
+                },
+                "points": {
+                    "type": "number"
+                }
+            }
+        }
+    },
+    "paths": {
+        "\/entitlements\/list": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Get list of existing entitlements for a Configuration",
+                "operationId": "GetVMListRequest",
+                "description": "Either configId or (accountId + programSerialNumber) should be provided in request payload.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000004",
+                                                "description": "VM created for department X",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-25 10:12:25",
+                                                "endDate": "2020-09-12 12:13:37",
+                                                "status": "STOPPED",
+                                                "token": "07981E8F70FFB1281179",
+                                                "tokenStatus": "USED"
+                                            },
+                                            {
+                                                "serialNumber": "FGVMELTM20000015",
+                                                "description": "VM created for department Y",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2021-01-01 00:00:00",
+                                                "endDate": "2022-10-21 12:13:37",
+                                                "status": "ACTIVE",
+                                                "token": "445A30CE1A88D8426119",
+                                                "tokenStatus": "NOTUSED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "integer"
+                                    },
+                                    "serialNumber": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "tokenStatus": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "configId": 22,
+                                    "programSerialNumber": "ELAVMR0000000101",
+                                    "accountId": 12345,
+                                    "serialNumber": "FGVMELTM20000015",
+                                    "status": "ACTIVE",
+                                    "tokenStatus": "NOTUSED",
+                                    "description": "test"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/entitlements\/vm\/create": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Create VM entitlements based on a Configuration",
+                "operationId": "CreateVMRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "PENDING",
+                                                "token": "D42B57491175A7B9BAD8",
+                                                "tokenStatus": "NOTUSED"
+                                            },
+                                            {
+                                                "serialNumber": "FGVMELTM20000021",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "PENDING",
+                                                "token": "C68EED876BDCDA72D186",
+                                                "tokenStatus": "NOTUSED"
+                                            },
+                                            {
+                                                "serialNumber": "FGVMELTM20000022",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "PENDING",
+                                                "token": "9A9FA6D4771B404BBAC3",
+                                                "tokenStatus": "NOTUSED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "count": {
+                                        "type": "integer"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "folderPath": {
+                                        "type": "string"
+                                    },
+                                    "skipPending": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "configId": 22,
+                                    "count": 3,
+                                    "description": "VMs created for department Z",
+                                    "endDate": "2021-10-11 00:00:00",
+                                    "folderPath": "My Assets\/subfolder1",
+                                    "skipPending": false
+                                }
+                            }
+                        }
+                    },
+                    "description": "1. By using 'endDate': null it will use the Program's end date automatically.\n 2. Set 'skipPending' to true will activate the entitlement right away and charges start to incur even without downloading the license by token."
+                }
+            }
+        },
+        "\/entitlements\/vm\/token": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Regenerate token for a VM",
+                "operationId": "RegenerateTokenRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2020-10-25 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "5965C5CC99D32D3B9A53",
+                                                "tokenStatus": "NOTUSED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "serialNumber": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "serialNumber": "FGVMELTM20000020"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/entitlements\/hardware\/create": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Create Hardware entitlements based on a Configuration",
+                "operationId": "CreateHWRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGT60FTK19000010",
+                                                "description": "Firewall 1",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": null,
+                                                "tokenStatus": null
+                                            },
+                                            {
+                                                "serialNumber": "FGT60FTK19000013",
+                                                "description": "Firewall 2",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": null,
+                                                "tokenStatus": null
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "serialNumbers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "example": {
+                                    "configId": 22,
+                                    "serialNumbers": [
+                                        "FGT60FTK19000010",
+                                        "FGT60FTK19000013"
+                                    ],
+                                    "endDate": "2021-10-11 00:00:00"
+                                }
+                            }
+                        }
+                    },
+                    "description": "NOTE: By passing 'endDate': null it will use the Program's end date automatically"
+                }
+            }
+        },
+        "\/entitlements\/hardware\/remove": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Remove Hardware serial numbers from FortiFlex",
+                "operationId": "RemoveHWRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "serialNumbers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "serialNumbers": [
+                                        "FGT60FTK19000010",
+                                        "FGT60FTK19000013"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "\/entitlements\/cloud\/create": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Create Cloud entitlements based on a Configuration",
+                "operationId": "CreateCloudRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FCTEMS0000000101",
+                                                "description": "New EMS",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": null,
+                                                "tokenStatus": null
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "example": {
+                                    "configId": 22,
+                                    "endDate": "2021-10-11 00:00:00"
+                                }
+                            }
+                        }
+                    },
+                    "description": "NOTE: By passing 'endDate': null it will use the Program's end date automatically"
+                }
+            }
+        },
+        "\/entitlements\/update": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Update an entitlement to use another Configuration or change its description or end date",
+                "operationId": "UpdateVMRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "New description for 020",
+                                                "configId": 25,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2020-10-25 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "D42B57491175A7B9BAD8",
+                                                "tokenStatus": "NOTUSED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "serialNumber": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "example": {
+                                    "serialNumber": "FGVMELTM20000020",
+                                    "configId": 25,
+                                    "description": "New description for 020",
+                                    "endDate": "2020-10-25"
+                                }
+                            }
+                        }
+                    },
+                    "description": "NOTE: 'configId', 'description' and 'endDate' can be existing or updated values"
+                }
+            }
+        },
+        "\/entitlements\/stop": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Stop an entitlement",
+                "operationId": "StopVMRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2020-10-25 00:00:00",
+                                                "status": "STOPPED",
+                                                "token": "D42B57491175A7B9BAD8",
+                                                "tokenStatus": "USED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "serialNumber": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "serialNumber": "FGVMELTM20000020"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/entitlements\/reactivate": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Reactivate an entitlement after being stopped",
+                "operationId": "ReactivateVMRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "VMs created for department Z",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2020-10-25 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "D42B57491175A7B9BAD8",
+                                                "tokenStatus": "USED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "serialNumber": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "serialNumber": "FGVMELTM20000020"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/entitlements\/points": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Get point usage for a Configuration or account",
+                "operationId": "GetPointUsageRequest",
+                "description": "Either configId or (accountId + programSerialNumber) should be provided in request payload.\r\nPoint consumption data older that 90 days won't be included in the results.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementPointsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000029",
+                                                "accountId": 12345,
+                                                "points": 425
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "configId": {
+                                        "type": "integer"
+                                    },
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "integer"
+                                    },
+                                    "startDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "example": {
+                                    "configId": 25,
+                                    "programSerialNumber": "ELAVMR0000000101",
+                                    "accountId": 12345,
+                                    "startDate": "2020-10-01",
+                                    "endDate": "2020-10-25"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/entitlements\/transfer": {
+            "post": {
+                "tags": [
+                    "Entitlements"
+                ],
+                "summary": "Move serial numbers and entitlements managed by FortiFlex from one account to another.",
+                "operationId": "TransferRequest",
+                "description": "sourceAccountId and targetAccountId in request should belong to the same organization and API user should have access to both (permission scope). targetConfigId can be id of Configuration with the same product type in the target account.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementPointsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000029",
+                                                "description": "VMs created for department Z",
+                                                "configId": 56,
+                                                "accountId": 112233,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "D42B57491175A7B9BAD8",
+                                                "tokenStatus": "USED"
+                                            },
+                                            {
+                                                "serialNumber": "FGVMELTM20000030",
+                                                "description": "VMs created for department Z",
+                                                "configId": 56,
+                                                "accountId": 112233,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2021-10-11 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "C68EED876BDCDA72D186",
+                                                "tokenStatus": "USED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "sourceAccountId": {
+                                        "type": "integer"
+                                    },
+                                    "sourceConfigId": {
+                                        "type": "integer"
+                                    },
+                                    "targetAccountId": {
+                                        "type": "integer"
+                                    },
+                                    "targetConfigId": {
+                                        "type": "integer"
+                                    },
+                                    "serialNumbers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "sourceAccountId": 12345,
+                                    "sourceConfigId": 25,
+                                    "targetAccountId": 112233,
+                                    "targetConfigId": null,
+                                    "serialNumbers": [
+                                        "FGVMELTM20000029",
+                                        "FGVMELTM20000030"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        }
+    }
+}

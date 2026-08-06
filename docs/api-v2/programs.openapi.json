@@ -1,0 +1,258 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "",
+        "version": "V1-oas3",
+        "title": "FortiFlex API V2.0"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/support.fortinet.com\/es\/api\/fortiflex\/v2",
+            "description": "Production server for FortiFlex external API"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "commonResponseFields": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "programArray": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/programArrayItem"
+                }
+            },
+            "programArrayItem": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer"
+                    },
+                    "serialNumber": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "hasSupportCoverage": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Programs",
+            "description": "APIs to work with FortiFlex Programs"
+        }
+    ],
+    "definitions": {
+        "commonResponseFields": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "programsArray": {
+            "type": "object",
+            "properties": {
+                "programs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/programItem"
+                    }
+                }
+            }
+        },
+        "programsBalanceArray": {
+            "type": "object",
+            "properties": {
+                "programs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/programBalanceItem"
+                    }
+                }
+            }
+        },
+        "programItem": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "endDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "hasSupportCoverage": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "programBalanceItem": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "pointBalance": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "paths": {
+        "\/programs\/list": {
+            "post": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Get list of FortiFlex Programs for the account",
+                "operationId": "GetProgramListRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/programsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "programs": [
+                                            {
+                                                "accountId": 223354,
+                                                "serialNumber": "ELAVMR0000000101",
+                                                "startDate": "2020-05-16 00:00:00",
+                                                "endDate": "2021-05-15 00:00:00",
+                                                "hasSupportCoverage": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": [],
+                                "example": []
+                            }
+                        }
+                    },
+                    "description": "No request body needed"
+                }
+            }
+        },
+        "\/programs\/points": {
+            "post": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Returns point balance for a prepaid FortiFlex Program",
+                "operationId": "GetProgramPointsRequest",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/programsBalanceArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "programs": [
+                                            {
+                                                "accountId": 223354,
+                                                "serialNumber": "ELAVMR0000000101",
+                                                "pointBalance": 126652
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "programSerialNumber": "ELAVMR0000000101"
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        }
+    }
+}

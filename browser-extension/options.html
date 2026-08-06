@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FortiFlex API Connector</title>
+<style>
+:root { --red:#EE3124; --ink:#2A2F3A; --muted:#6B7589; --line:#DDE1E9; --soft:#F2F4F7; --white:#fff; }
+* { box-sizing:border-box; }
+body { min-width:390px; margin:0; padding:18px; color:var(--ink); background:var(--soft); font:13px/1.5 'Segoe UI','Helvetica Neue',Arial,sans-serif; }
+.card { max-width:620px; margin:0 auto; overflow:hidden; background:var(--white); border:1px solid var(--line); border-radius:5px; box-shadow:0 10px 30px rgba(26,29,35,.08); }
+.head { padding:16px 18px; color:#fff; background:#1A1D23; border-top:3px solid var(--red); }
+.head h1 { margin:0; font-size:17px; }
+.head p { margin:3px 0 0; color:#AEB6C6; font-size:11px; }
+.body { display:flex; flex-direction:column; gap:13px; padding:18px; }
+.note { padding:10px; color:#3557A5; background:#EEF3FF; border:1px solid #B8CBF5; border-radius:3px; font-size:11px; }
+.field { display:flex; flex-direction:column; gap:4px; }
+label { color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+input { width:100%; padding:7px 9px; color:var(--ink); background:#fff; border:1px solid #C8CDD9; border-radius:3px; outline:none; font:13px 'Courier New',monospace; }
+input:focus { border-color:var(--red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+.pw { position:relative; }
+.pw input { padding-right:55px; }
+.show { position:absolute; top:4px; right:4px; height:27px; padding:0 8px; color:var(--muted); background:#F7F9FC; border:1px solid var(--line); border-radius:2px; cursor:pointer; font-size:10px; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; padding-top:3px; }
+button { padding:7px 10px; border:1px solid transparent; border-radius:3px; cursor:pointer; font:12px 'Segoe UI',sans-serif; }
+.primary { color:#fff; background:var(--red); border-color:var(--red); }
+.secondary { color:var(--ink); background:#fff; border-color:#C8CDD9; }
+.danger { color:#C0392B; background:#FEF0EE; border-color:#F5C6C2; }
+button:disabled { opacity:.55; cursor:wait; }
+.status { min-height:36px; padding:9px 10px; color:var(--muted); background:#F7F9FC; border:1px solid var(--line); border-radius:3px; font-size:11px; }
+.status.ok { color:#1A7A3A; background:#EEFBF2; border-color:#A8DDB5; }
+.status.error { color:#C0392B; background:#FEF0EE; border-color:#F5C6C2; }
+.foot { color:#8A93A8; font-size:10px; }
+</style>
+</head>
+<body>
+<main class="card">
+  <header class="head"><h1>FortiFlex API Connector</h1><p>Local credential settings for the FabricBOM calculator</p></header>
+  <section class="body">
+    <div class="note">Your credentials stay in this browser extension and are sent only to Fortinet. They are not exposed to FabricBOM, synchronized, or stored on another server.</div>
+    <div class="field"><label for="api-id">API ID / username</label><input id="api-id" type="text" autocomplete="off" placeholder="Your FortiFlex API ID"></div>
+    <div class="field"><label for="client-id">Client ID</label><input id="client-id" type="text" autocomplete="off" placeholder="FortiFlex Cloud client ID"></div>
+    <div class="field">
+      <label for="password">Password / API key</label>
+      <div class="pw"><input id="password" type="password" autocomplete="new-password" placeholder="Your FortiFlex password or key"><button class="show" id="show-btn" type="button">Show</button></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="save-btn" type="button">Save &amp; test connection</button>
+      <button class="danger" id="clear-btn" type="button">Remove credential</button>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">Checking local settings…</div>
+    <p class="foot">OAuth tokens are kept in memory and discarded when the extension background process stops. Removing the extension also removes its local credential storage.</p>
+  </section>
+</main>
+<script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FortiFlex BOM Calculator</title>
+
+<script type="application/json" id="fabricbom-plugin-meta">
+{
+  "fabricbomPlugin": true,
+  "name": "FortiFlex BOM Calculator",
+  "category": "Licensing",
+  "icon": "chart",
+  "version": "0.5.0",
+  "description": "Build table-based FortiFlex point estimates with browser-local credentials"
+}
+</script>
+
+<style>
+:root {
+  --forti-red:#EE3124; --forti-dark:#1A1D23; --forti-sidebar:#21252D;
+  --forti-border:#363C4A; --forti-text-primary:#E8EAF0;
+  --forti-text-secondary:#8A93A8; --forti-content-bg:#F2F4F7;
+  --c-white:#fff; --c-border:#DDE1E9; --c-text:#2A2F3A;
+  --c-text2:#6B7589; --c-textm:#9BA5BA; --c-sh:#F7F9FC;
+  --c-ib:#C8CDD9; --c-th:#EEF1F6;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body.plugin-body {
+  height:100vh; overflow:hidden; display:flex; flex-direction:column;
+  font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size:13px;
+  line-height:1.5; color:var(--c-text); background:var(--forti-content-bg);
+}
+button, input, select { font:inherit; }
+
+.plugin-bar {
+  height:44px; background:var(--c-white); border-bottom:1px solid var(--c-border);
+  display:flex; align-items:center; padding:0 16px; gap:8px; flex-shrink:0;
+}
+.bar-title { font-size:12px; font-weight:600; }
+.bar-sub { color:var(--c-text2); font-size:11px; }
+.spacer { flex:1; }
+.plugin-scroll {
+  flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px;
+}
+.plugin-scroll::-webkit-scrollbar { width:6px; }
+.plugin-scroll::-webkit-scrollbar-thumb { background:var(--c-ib); border-radius:3px; }
+
+.lc { background:var(--c-white); border:1px solid var(--c-border); border-radius:4px; overflow:visible; }
+.lch { background:var(--c-sh); border-bottom:1px solid var(--c-border); padding:9px 18px; display:flex; align-items:center; gap:8px; }
+.lch h2 { font-size:11px; font-weight:700; color:var(--c-text); letter-spacing:.04em; text-transform:uppercase; }
+.lcb { padding:18px; }
+.cnt-badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:18px; background:var(--forti-red); color:#fff; font-size:10px; font-weight:700; border-radius:9px; padding:0 5px; }
+.cnt-badge.zero { background:var(--c-ib); }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:7px 10px; border-radius:3px; font-size:12px; font-weight:500; cursor:pointer; border:1px solid transparent; transition:background .12s; white-space:nowrap; line-height:1.2; }
+.btn-sm { padding:5px 9px; font-size:11px; }
+.bp { background:var(--forti-red); color:#fff; border-color:var(--forti-red); }
+.bp:hover { background:#d42a1e; }
+.bs { background:var(--c-white); color:var(--c-text); border-color:var(--c-ib); }
+.bs:hover { background:var(--c-sh); }
+.bd { background:#FEF0EE; color:#C0392B; border-color:#F5C6C2; }
+.bd:hover { background:#F5C6C2; }
+
+.fi { background:var(--c-white); border:1px solid var(--c-ib); border-radius:3px; padding:6px 9px; font-size:13px; color:var(--c-text); outline:none; transition:border-color .15s; width:100%; min-width:105px; }
+.fi:focus { border-color:var(--forti-red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+select.fi { cursor:pointer; }
+.fl { font-size:10px; font-weight:700; color:var(--c-text2); text-transform:uppercase; letter-spacing:.07em; display:block; }
+.fg { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fg1 { display:flex; flex-direction:column; gap:4px; }
+
+.bt-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.bt { width:100%; border-collapse:collapse; font-size:12px; }
+table.bt thead th { background:var(--c-th); border:1px solid var(--c-border); padding:6px 9px; text-align:left; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#4A5268; white-space:nowrap; }
+table.bt tbody td { border:1px solid var(--c-border); padding:7px 8px; vertical-align:middle; font-size:12px; }
+table.bt tbody tr.bt-even td { background:var(--c-sh); }
+table.bt tbody tr.data-row:hover td { background:#EEF1F6; }
+table.bt .num { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+table.bt input[type="number"] { min-width:62px; width:62px; }
+table.bt select { min-width:145px; }
+table.bt select.model { min-width:165px; }
+
+.br { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-radius:2px; padding:2px 5px; white-space:nowrap; }
+.br-green { background:#EEFBF2; color:#1A7A3A; border:1px solid #A8DDB5; }
+.br-amber { background:#FFF8EE; color:#8A5800; border:1px solid #F5D9A0; }
+.br-gray { background:#F0F0F2; color:#6B7280; border:1px solid #D1D5DB; }
+.mono { font-family:'Courier New',monospace; }
+.act-cell { white-space:nowrap; text-align:right; }
+.ic-btn { background:none; border:1px solid var(--c-ib); border-radius:3px; cursor:pointer; font-size:13px; color:var(--c-text2); padding:2px 7px; line-height:1.4; }
+.ic-btn:hover { background:#FEF0EE; color:#C0392B; border-color:#F5C6C2; }
+
+.import-row { display:flex; align-items:center; gap:12px; }
+.import-icon { width:34px; height:34px; border-radius:3px; background:#FEF0EE; color:var(--forti-red); display:grid; place-items:center; font-size:18px; font-weight:700; flex-shrink:0; }
+.import-copy strong { display:block; font-size:12px; }
+.import-copy span { color:var(--c-text2); font-size:11px; }
+
+.addon-picker { position:relative; min-width:188px; }
+.addon-trigger { width:100%; min-height:32px; padding:4px 24px 4px 5px; display:flex; align-items:center; flex-wrap:wrap; gap:3px; text-align:left; background:var(--c-white); border:1px solid var(--c-ib); border-radius:3px; cursor:pointer; }
+.addon-trigger:after { content:'⌄'; position:absolute; right:8px; top:5px; color:var(--c-text2); }
+.addon-picker.open .addon-trigger { border-color:var(--forti-red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+.addon-menu { display:none; position:fixed; z-index:2200; width:286px; max-height:340px; overflow-y:auto; padding:6px; background:#fff; border:1px solid var(--c-ib); border-radius:3px; box-shadow:0 10px 28px rgba(26,29,35,.24); }
+.addon-picker.open .addon-menu { display:block; }
+.addon-menu label { display:flex; gap:7px; padding:7px; border-radius:2px; cursor:pointer; }
+.addon-menu label:hover { background:var(--c-sh); }
+.addon-menu label input { margin-top:2px; accent-color:var(--forti-red); }
+.addon-menu small { display:block; color:var(--c-text2); font-size:10px; }
+.chip { display:inline-block; max-width:105px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#EEF3FF; border:1px solid #B8CBF5; border-radius:2px; padding:1px 5px; font-size:10px; color:#3557A5; }
+.placeholder { color:var(--c-textm); padding-left:3px; font-size:11px; }
+.menu-search { width:100%; margin:0 0 5px; padding:6px 8px; color:var(--c-text); background:#fff; border:1px solid var(--c-ib); border-radius:3px; outline:none; font-size:11px; }
+.menu-search:focus { border-color:var(--forti-red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+.menu-empty { padding:10px 7px; color:var(--c-textm); text-align:center; font-size:11px; }
+.menu-empty[hidden] { display:none; }
+
+.search-select { position:relative; min-width:145px; }
+.search-input-wrap { position:relative; }
+.search-select-input { padding-right:28px; text-overflow:ellipsis; }
+.search-select-toggle { position:absolute; top:1px; right:1px; width:27px; height:calc(100% - 2px); color:var(--c-text2); background:#fff; border:0; border-left:1px solid var(--c-border); border-radius:0 2px 2px 0; cursor:pointer; }
+.search-select.open .search-select-input { border-color:var(--forti-red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+.search-select-menu { display:none; position:fixed; z-index:2300; width:290px; max-height:320px; overflow-y:auto; padding:5px; background:#fff; border:1px solid var(--c-ib); border-radius:3px; box-shadow:0 10px 28px rgba(26,29,35,.24); }
+.search-select.open .search-select-menu { display:block; }
+.search-option { width:100%; padding:7px 8px; color:var(--c-text); background:#fff; border:0; border-radius:2px; cursor:pointer; text-align:left; font-size:11px; }
+.search-option:hover, .search-option:focus { background:#EEF3FF; outline:none; }
+.search-option[aria-selected="true"] { color:#A62E24; background:#FEF0EE; font-weight:600; }
+.search-option small { display:block; color:var(--c-text2); font-weight:400; font-family:'Courier New',monospace; }
+.search-option[hidden] { display:none; }
+
+.table-ftr { padding:10px 12px; display:flex; align-items:center; gap:8px; border:1px solid var(--c-border); border-top:0; background:var(--c-sh); }
+.hint { color:var(--c-text2); font-size:11px; }
+.program-select { width:auto; min-width:180px; max-width:260px; padding:4px 26px 4px 7px; font-size:11px; }
+.api-status { display:flex; align-items:flex-start; gap:8px; padding:9px 12px; border:1px solid var(--c-border); border-radius:3px; background:var(--c-white); color:var(--c-text2); font-size:11px; }
+.api-status:before { content:'●'; color:#3557A5; font-size:9px; margin-top:2px; }
+.api-status.success { background:#EEFBF2; border-color:#A8DDB5; color:#1A7A3A; }
+.api-status.success:before { color:#1A7A3A; }
+.api-status.error { background:#FEF0EE; border-color:#F5C6C2; color:#A62E24; }
+.api-status.error:before { color:#C0392B; }
+.api-status.loading:before { content:'◌'; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.empty-cell { text-align:center; color:var(--c-text2); font-style:italic; padding:28px 10px !important; }
+.param-picker { position:relative; min-width:118px; }
+.param-trigger { width:100%; min-height:32px; padding:4px 24px 4px 8px; text-align:left; background:#fff; border:1px solid var(--c-ib); border-radius:3px; color:var(--c-text); cursor:pointer; font-size:11px; }
+.param-trigger:after { content:'⌄'; position:absolute; right:8px; top:5px; color:var(--c-text2); }
+.param-picker.open .param-trigger { border-color:var(--forti-red); box-shadow:0 0 0 2px rgba(238,49,36,.1); }
+.param-menu { display:none; position:fixed; z-index:2200; width:290px; max-height:360px; overflow-y:auto; padding:10px; background:#fff; border:1px solid var(--c-ib); border-radius:3px; box-shadow:0 10px 28px rgba(26,29,35,.24); }
+.param-picker.open .param-menu { display:flex; flex-direction:column; gap:9px; }
+.param-menu .fi { min-width:0; }
+.row-state { display:block; margin-top:2px; color:var(--c-textm); font-size:9px; }
+.row-state.error { color:#C0392B; }
+
+.estimate-grid { display:grid; grid-template-columns:repeat(4, minmax(140px,1fr)); gap:10px; }
+.metric { border:1px solid var(--c-border); border-radius:3px; padding:13px 14px; background:#fff; }
+.metric span { display:block; color:var(--c-text2); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.metric strong { display:block; margin-top:3px; font-size:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.metric.primary { border-top:3px solid var(--forti-red); padding-top:11px; }
+.metric.primary strong { color:var(--forti-red); }
+.disclaimer { margin-top:10px; color:var(--c-text2); font-size:11px; }
+
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+.modal-bg.on { display:flex; }
+.modal-box { background:#fff; border-radius:5px; box-shadow:0 8px 32px rgba(0,0,0,.25); width:100%; max-width:540px; display:flex; flex-direction:column; max-height:90vh; }
+.modal-hdr { padding:14px 18px; border-bottom:1px solid var(--c-border); display:flex; align-items:center; gap:10px; }
+.modal-hdr h3 { font-size:14px; font-weight:600; flex:1; }
+.modal-close { background:none; border:none; cursor:pointer; font-size:22px; color:var(--c-text2); padding:0 2px; line-height:1; }
+.modal-body { padding:18px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+.modal-ftr { padding:12px 18px; border-top:1px solid var(--c-border); display:flex; gap:8px; justify-content:flex-end; background:var(--c-sh); border-radius:0 0 5px 5px; }
+.local-note { display:flex; gap:10px; padding:11px; background:#EEF3FF; border:1px solid #B8CBF5; border-radius:3px; color:#3557A5; font-size:11px; }
+.local-note strong { display:block; margin-bottom:2px; }
+.credential-actions { display:flex; align-items:center; gap:8px; padding-top:3px; }
+.cred-state { color:var(--c-text2); font-size:11px; }
+.field-note { color:var(--c-text2); font-size:10px; }
+.pw-wrap { position:relative; }
+.pw-wrap .fi { padding-right:52px; }
+.pw-toggle { position:absolute; top:3px; right:3px; height:27px; padding:0 7px; background:var(--c-sh); border:1px solid var(--c-border); border-radius:2px; color:var(--c-text2); font-size:10px; cursor:pointer; }
+.toast { position:fixed; right:16px; bottom:16px; z-index:1200; padding:9px 12px; background:var(--forti-dark); color:#fff; border-radius:3px; font-size:11px; opacity:0; transform:translateY(8px); pointer-events:none; transition:.18s; }
+.toast.on { opacity:1; transform:translateY(0); }
+
+@media (max-width:850px) {
+  .bar-sub { display:none; }
+  .estimate-grid { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:520px) {
+  .plugin-bar { padding:0 10px; }
+  .plugin-scroll { padding:10px; }
+  .fg, .estimate-grid { grid-template-columns:1fr; }
+  .import-row { align-items:flex-start; }
+  .bar-title { display:none; }
+}
+</style>
+</head>
+<body class="plugin-body">
+
+<div class="plugin-bar">
+  <span class="bar-title">FortiFlex BOM Calculator</span>
+  <span class="bar-sub" id="catalog-label">Connect to load catalog</span>
+  <div class="spacer"></div>
+  <select class="fi program-select" id="program-select" aria-label="FortiFlex program" disabled><option>Select program</option></select>
+  <span class="br br-amber" id="credential-badge">Checking connector</span>
+  <button class="btn btn-sm bs" type="button" id="settings-btn">⚙ Connector settings</button>
+  <button class="btn btn-sm bp" type="button" id="calculate-btn" disabled>Calculate BOM</button>
+</div>
+
+<div class="plugin-scroll">
+  <div class="api-status loading" id="api-status" role="status" aria-live="polite">Looking for the FortiFlex API Connector extension…</div>
+  <div class="lc">
+    <div class="lcb import-row">
+      <div class="import-icon">⇧</div>
+      <div class="import-copy">
+        <strong>Start from a device list</strong>
+        <span>Import remains a workflow placeholder; build rows manually using the live FortiFlex catalog.</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn bs" type="button" id="import-btn">Choose CSV or XLSX</button>
+    </div>
+  </div>
+
+  <div class="lc">
+    <div class="lch">
+      <h2>Device list</h2>
+      <span class="cnt-badge zero" id="line-badge">0</span>
+      <div class="spacer"></div>
+      <span class="hint">Selections cascade from left to right</span>
+    </div>
+    <div class="bt-wrap">
+      <table class="bt" aria-label="FortiFlex bill of materials input">
+        <thead>
+          <tr>
+            <th>#</th><th>Product family</th><th>Count</th><th>Model / size</th><th>Bundle</th><th>Add-ons</th><th>Other options</th>
+            <th class="num">Points / device / day</th><th class="num">Line / day</th><th class="num">Line / 365 days</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="bom-rows"></tbody>
+      </table>
+    </div>
+    <div class="table-ftr">
+      <button class="btn btn-sm bs" type="button" id="add-row-btn">+ Add line</button>
+      <span class="hint">Catalog choices come from FortiFlex API v2 metadata.</span>
+    </div>
+  </div>
+
+  <div class="lc">
+    <div class="lch"><h2>Estimate summary</h2><div class="spacer"></div><span class="br br-gray">365-day horizon</span></div>
+    <div class="lcb">
+      <div class="estimate-grid">
+        <div class="metric"><span>Devices</span><strong id="device-total">0</strong></div>
+        <div class="metric"><span>Product families</span><strong id="family-total">0</strong></div>
+        <div class="metric"><span>Points / day</span><strong id="daily-total">—</strong></div>
+        <div class="metric primary"><span>365-day estimate</span><strong id="year-total">—</strong></div>
+      </div>
+      <p class="disclaimer">Point estimate only—not a dollar quote. Annual points equal the API line total for the requested count × 365.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3 id="settings-title">FortiFlex API Connector</h3>
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="local-note">
+        <span>◉</span>
+        <div><strong>Credentials stay inside the browser extension</strong>The connector performs Fortinet OAuth and API requests outside the web page's CORS boundary. FabricBOM receives catalog and calculation results only—never your API ID, client ID, password, or OAuth token.</div>
+      </div>
+      <div class="api-status" id="connector-modal-state">Checking connector status…</div>
+      <p class="field-note">Install the companion extension once on each Mac or PC. Its settings page provides Save &amp; test connection and Remove credential actions.</p>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn bs" type="button" data-close-modal>Cancel</button>
+      <button class="btn bs" type="button" id="retry-connector-btn">Try again</button>
+      <button class="btn bp" type="button" id="open-extension-btn">Open extension settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+// FabricBOM ordinary plugin state belongs in the shared backup-aware store.
+const STATE_STORE_KEY = 'plugin_data_fortiflex_bom';
+const CONNECTOR_REQUEST_SOURCE = 'fortiflex-bom-plugin';
+const CONNECTOR_RESPONSE_SOURCE = 'fortiflex-api-connector';
+const CONNECTOR_REQUEST_EVENT = 'fortiflex-connector-request-v1';
+const CONNECTOR_RESPONSE_EVENT = 'fortiflex-connector-response-v1';
+const connectorRequests = new Map();
+
+let productTypes = [];
+let productTypeMap = new Map();
+let programs = [];
+let rows = [];
+let selectedProgramSerial = '';
+let pendingState = null;
+let connectorAvailable = false;
+let connectorConfigured = false;
+let calculationRunning = false;
+let toastTimer = null;
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+function formatPoints(value) { return Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message; toast.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('on'), 2500);
+}
+
+function openSharedDB() {
+  return new Promise((resolve,reject) => {
+    const request = indexedDB.open('toolbox_shared',2);
+    request.onsuccess = event => resolve(event.target.result);
+    request.onerror = event => reject(event.target.error);
+  });
+}
+function clearLegacyCredentialStore() {
+  // Version 0.3 stored credentials in page-owned IndexedDB. The extension now owns
+  // all secrets, so remove that obsolete store instead of leaving a second copy.
+  try { indexedDB.deleteDatabase('fortiflex_bom_private'); } catch { /* Ignore unsupported preview contexts. */ }
+}
+async function loadPluginState() {
+  try {
+    const db = await openSharedDB();
+    return await new Promise((resolve,reject) => {
+      const request = db.transaction('datasets','readonly').objectStore('datasets').get(STATE_STORE_KEY);
+      request.onsuccess = () => resolve(request.result && request.result.data ? request.result.data : null);
+      request.onerror = event => reject(event.target.error);
+    });
+  } catch { return null; }
+}
+async function savePluginState() {
+  try {
+    const db = await openSharedDB();
+    await new Promise((resolve,reject) => {
+      const tx = db.transaction('datasets','readwrite');
+      const storedRows = rows.map(row => ({productTypeId:row.productTypeId,count:row.count,values:row.values}));
+      tx.objectStore('datasets').put({key:STATE_STORE_KEY,data:{rows:storedRows,selectedProgramSerial},updatedAt:Date.now()});
+      tx.oncomplete = resolve; tx.onerror = event => reject(event.target.error);
+    });
+  } catch { /* Standalone preview may not have FabricBOM's shared schema. */ }
+}
+
+class ConnectorError extends Error {
+  constructor(message,code='connector_error') { super(message); this.code=code; }
+}
+function setStatus(message,type='info') {
+  const status = document.getElementById('api-status');
+  status.textContent = message; status.className = `api-status ${type}`;
+}
+function friendlyError(error,action) {
+  if (error && error.code==='extension_missing' && location.protocol==='file:') {
+    const bridgeVersion=document.documentElement.getAttribute('data-fortiflex-connector-bridge');
+    if (bridgeVersion) return `Connector bridge ${bridgeVersion} loaded, but its background process did not respond while ${action}. Open the extension's service-worker console and check for an error.`;
+    return `The FortiFlex API Connector could not access this local file while ${action}. Reload extension version 0.1.4, enable “Allow access to file URLs” in its Details page, refresh this calculator tab, and try again.`;
+  }
+  if (error && error.code==='extension_missing') return `The FortiFlex API Connector extension was not detected while ${action}. Install or enable the connector, refresh this page, then try again.`;
+  if (error && error.code==='not_configured') return `Open the connector settings and add your FortiFlex credentials before ${action}.`;
+  return `${action.charAt(0).toUpperCase()+action.slice(1)} failed: ${error && error.message ? error.message : 'Unknown connector error.'}`;
+}
+function connectorRequest(action,payload=null,timeoutMs=12000) {
+  return new Promise((resolve,reject)=>{
+    const id=`ff-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    const timer=setTimeout(()=>{
+      connectorRequests.delete(id);
+      reject(new ConnectorError('The FortiFlex API Connector extension did not respond.','extension_missing'));
+    },timeoutMs);
+    connectorRequests.set(id,{resolve,reject,timer});
+    const message={source:CONNECTOR_REQUEST_SOURCE,type:'request',id,action,payload};
+    if (location.protocol==='file:') {
+      document.dispatchEvent(new CustomEvent(CONNECTOR_REQUEST_EVENT,{detail:JSON.stringify(message)}));
+    } else {
+      window.parent.postMessage(message,location.origin==='null'?'*':location.origin);
+    }
+  });
+}
+
+function handleConnectorResponse(message) {
+  if (!message || message.source!==CONNECTOR_RESPONSE_SOURCE || message.type!=='response') return;
+  const pending=connectorRequests.get(message.id); if (!pending) return;
+  clearTimeout(pending.timer); connectorRequests.delete(message.id);
+  if (message.ok) pending.resolve(message.result);
+  else pending.reject(new ConnectorError(message.error&&message.error.message?message.error.message:'The connector request failed.',message.error&&message.error.code?message.error.code:'connector_error'));
+}
+window.addEventListener('message',event=>{
+  if (event.source!==window.parent) return;
+  if (location.origin!=='null' && event.origin!==location.origin) return;
+  handleConnectorResponse(event.data);
+});
+document.addEventListener(CONNECTOR_RESPONSE_EVENT,event=>{
+  if (location.protocol!=='file:' || typeof event.detail!=='string') return;
+  try { handleConnectorResponse(JSON.parse(event.detail)); } catch { /* Ignore malformed bridge responses. */ }
+});
+
+function parameterType(parameter) { return String(parameter.type || '').toUpperCase(); }
+function rolesFor(productType) {
+  const params = (productType.parameters || []).filter(parameter => parameterType(parameter) !== 'READONLY');
+  const bundle = params.find(parameter => parameterType(parameter)==='SINGLEVALUE' && /service\s*(package|bundle|tier)|support\s*service|license\s*package|subscription\s*package|bundle/i.test(parameter.name||'')) || null;
+  const model = params.find(parameter => parameter!==bundle && /model|appliance/i.test(parameter.name||''))
+    || params.find(parameter => parameter!==bundle && parameterType(parameter)==='NUMERIC' && /cpu|core|size|throughput|capacity/i.test(parameter.name||''))
+    || params.find(parameter => parameter!==bundle && parameterType(parameter)==='SINGLEVALUE')
+    || params.find(parameter => parameter!==bundle && parameterType(parameter)==='NUMERIC') || null;
+  const addons = params.filter(parameter => parameterType(parameter)==='MULTIVALUE');
+  const assigned = new Set([model && model.parameterId,bundle && bundle.parameterId,...addons.map(parameter=>parameter.parameterId)].filter(value=>value!==null));
+  const extras = params.filter(parameter => !assigned.has(parameter.parameterId));
+  return {model,bundle,addons,extras,params};
+}
+function defaultValue(parameter) {
+  const type = parameterType(parameter);
+  if (type==='MULTIVALUE') return [];
+  if (type==='SINGLEVALUE') return parameter.validValues && parameter.validValues.length ? String(parameter.validValues[0].value) : '';
+  if (type==='NUMERIC') return String(parameter.minValue == null ? 0 : parameter.minValue);
+  return '';
+}
+function createRow(productType) {
+  const values = {};
+  rolesFor(productType).params.forEach(parameter => { values[parameter.parameterId]=defaultValue(parameter); });
+  return {productTypeId:Number(productType.productTypeId),count:1,values,result:null,error:'',calculating:false};
+}
+function restoreRows(storedRows) {
+  if (!Array.isArray(storedRows)) return [];
+  return storedRows.map(stored => {
+    const productType = productTypeMap.get(Number(stored.productTypeId));
+    if (!productType) return null;
+    const row = createRow(productType);
+    row.count=Math.max(1,parseInt(stored.count,10)||1);
+    rolesFor(productType).params.forEach(parameter => {
+      const incoming = stored.values && stored.values[parameter.parameterId];
+      if (incoming !== undefined) row.values[parameter.parameterId]=parameterType(parameter)==='MULTIVALUE' ? (Array.isArray(incoming)?incoming.map(String):[]) : String(incoming);
+    });
+    return row;
+  }).filter(Boolean);
+}
+function searchableControl(options,value,target,label,extraClass='',showCodes=true) {
+  const selected=options.find(option=>String(option.value)===String(value)) || options[0] || {value:'',label:''};
+  const targetAttributes=target.field
+    ? ` data-target-field="${esc(target.field)}"`
+    : ` data-target-param-id="${esc(target.parameterId)}"`;
+  const choices=options.map(option=>{
+    const optionLabel=String(option.label||option.value||'');
+    const optionValue=String(option.value==null?'':option.value);
+    const code=showCodes && optionValue && optionValue!==optionLabel ? `<small>${esc(optionValue)}</small>` : '';
+    return `<button class="search-option" type="button" role="option" data-option-value="${esc(optionValue)}" data-search="${esc(`${optionLabel} ${optionValue}`.toLowerCase())}" aria-selected="${optionValue===String(selected.value)}">${esc(optionLabel)}${code}</button>`;
+  }).join('');
+  return `<div class="search-select"${targetAttributes} data-selected-label="${esc(selected.label||selected.value)}">
+    <div class="search-input-wrap">
+      <input class="fi search-select-input ${extraClass}" type="text" value="${esc(selected.label||selected.value)}" autocomplete="off" spellcheck="false" role="combobox" aria-label="${esc(label)}" aria-expanded="false" aria-autocomplete="list">
+      <button class="search-select-toggle" type="button" tabindex="-1" aria-label="Show ${esc(label)} options">⌄</button>
+    </div>
+    <div class="search-select-menu" role="listbox">${choices}<div class="menu-empty" hidden>No matching options</div></div>
+  </div>`;
+}
+function parameterControl(parameter,value,extraClass='') {
+  if (!parameter) return '<span class="placeholder">Not applicable</span>';
+  if (parameterType(parameter)==='SINGLEVALUE') {
+    const options=(parameter.validValues||[]).map(item=>({value:String(item.value),label:String(item.description||item.value)}));
+    if (options.length) return searchableControl(options,value,{parameterId:parameter.parameterId},parameter.name,extraClass,true);
+    return `<input class="fi ${extraClass}" type="text" data-param-id="${parameter.parameterId}" value="${esc(value)}" aria-label="${esc(parameter.name)}">`;
+  }
+  if (parameterType(parameter)==='NUMERIC') {
+    const min=parameter.minValue==null?'':` min="${parameter.minValue}"`, max=parameter.maxValue==null?'':` max="${parameter.maxValue}"`, step=parameter.step==null?'':` step="${parameter.step}"`;
+    return `<input class="fi ${extraClass}" type="number" data-param-id="${parameter.parameterId}" value="${esc(value)}"${min}${max}${step} aria-label="${esc(parameter.name)}">`;
+  }
+  return '<span class="placeholder">Not applicable</span>';
+}
+function addonPicker(row,productType) {
+  const addonParams=rolesFor(productType).addons;
+  const selected=[];
+  addonParams.forEach(parameter => (row.values[parameter.parameterId]||[]).forEach(value => {
+    const found=(parameter.validValues||[]).find(item=>String(item.value)===String(value)); selected.push(found?found.description||found.value:value);
+  }));
+  if (!addonParams.length) return '<span class="placeholder">None available</span>';
+  const chips=selected.length?selected.map(item=>`<span class="chip">${esc(item)}</span>`).join(''):'<span class="placeholder">Choose add-ons</span>';
+  const choices=addonParams.map(parameter => (parameter.validValues||[]).map(item => {
+    const checked=(row.values[parameter.parameterId]||[]).map(String).includes(String(item.value));
+    const label=String(item.description||item.value);
+    return `<label data-addon-choice data-search="${esc(`${label} ${item.value} ${parameter.name||''}`.toLowerCase())}"><input type="checkbox" data-param-id="${parameter.parameterId}" data-param-value="${esc(item.value)}"${checked?' checked':''}><span>${esc(label)}<small>${esc(`${item.value}${parameter.name?` · ${parameter.name}`:''}`)}</small></span></label>`;
+  }).join('')).join('');
+  return `<div class="addon-picker"><button class="addon-trigger" type="button">${chips}</button><div class="addon-menu"><input class="menu-search addon-search" type="search" autocomplete="off" placeholder="Search add-ons…" aria-label="Search add-ons">${choices||'<span class="placeholder">No values available</span>'}<div class="menu-empty" data-addon-empty hidden>No matching add-ons</div></div></div>`;
+}
+function extrasPicker(row,productType) {
+  const extras=rolesFor(productType).extras;
+  if (!extras.length) return '<span class="placeholder">None</span>';
+  const fields=extras.map(parameter=>`<div class="fg1"><label class="fl">${esc(parameter.name)}</label>${parameterControl(parameter,row.values[parameter.parameterId])}</div>`).join('');
+  return `<div class="param-picker"><button class="param-trigger" type="button">${extras.length} option${extras.length===1?'':'s'}</button><div class="param-menu">${fields}</div></div>`;
+}
+function renderRows() {
+  const tbody=document.getElementById('bom-rows');
+  if (!productTypes.length) {
+    tbody.innerHTML='<tr><td class="empty-cell" colspan="11">Connect to FortiFlex to load product families and parameters.</td></tr>';
+  } else if (!rows.length) {
+    tbody.innerHTML='<tr><td class="empty-cell" colspan="11">No items yet — click <strong>+ Add line</strong> to get started.</td></tr>';
+  } else {
+    tbody.innerHTML=rows.map((row,index)=>{
+      const productType=productTypeMap.get(Number(row.productTypeId));
+      const roles=rolesFor(productType);
+      const familyOptions=productTypes.map(item=>({value:String(item.productTypeId),label:String(item.name)}));
+      const state=row.calculating?'Calculating…':(row.error?esc(row.error):'');
+      return `<tr class="data-row${index%2?' bt-even':''}" data-index="${index}">
+        <td>${index+1}</td><td>${searchableControl(familyOptions,row.productTypeId,{field:'productTypeId'},'Product family','',false)}</td>
+        <td><input class="fi" type="number" min="1" step="1" data-field="count" value="${row.count}"></td>
+        <td>${parameterControl(roles.model,row.values[roles.model&&roles.model.parameterId],'model')}</td>
+        <td>${parameterControl(roles.bundle,row.values[roles.bundle&&roles.bundle.parameterId])}</td>
+        <td>${addonPicker(row,productType)}</td><td>${extrasPicker(row,productType)}</td>
+        <td class="num">${row.result?formatPoints(row.result.perDevice):'—'}</td>
+        <td class="num">${row.result?formatPoints(row.result.current):'—'}${state?`<span class="row-state${row.error?' error':''}">${state}</span>`:''}</td>
+        <td class="num">${row.result?formatPoints(row.result.current*365):'—'}</td>
+        <td class="act-cell"><button class="ic-btn" type="button" data-remove aria-label="Remove line ${index+1}">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+  const badge=document.getElementById('line-badge');
+  badge.textContent=rows.length; badge.className='cnt-badge'+(rows.length?'':' zero');
+  renderSummary(); updateControls();
+}
+function renderSummary() {
+  const devices=rows.reduce((sum,row)=>sum+Number(row.count),0);
+  const completed=rows.length>0 && rows.every(row=>row.result);
+  const daily=completed?rows.reduce((sum,row)=>sum+row.result.current,0):null;
+  document.getElementById('device-total').textContent=devices.toLocaleString();
+  document.getElementById('family-total').textContent=new Set(rows.map(row=>row.productTypeId)).size;
+  document.getElementById('daily-total').textContent=daily==null?'—':formatPoints(daily);
+  document.getElementById('year-total').textContent=daily==null?'—':formatPoints(daily*365);
+}
+function updateControls() {
+  document.getElementById('add-row-btn').disabled=!productTypes.length || calculationRunning;
+  document.getElementById('calculate-btn').disabled=!productTypes.length || !selectedProgramSerial || !rows.length || calculationRunning;
+  document.getElementById('program-select').disabled=!programs.length || calculationRunning;
+}
+function invalidateRow(row) { row.result=null; row.error=''; row.calculating=false; }
+function buildParameters(row,productType) {
+  const parameters=[];
+  rolesFor(productType).params.forEach(parameter=>{
+    const value=row.values[parameter.parameterId];
+    if (parameterType(parameter)==='MULTIVALUE') {
+      (Array.isArray(value)?value:[]).forEach(item=>parameters.push({id:Number(parameter.parameterId),value:String(item)}));
+    } else if (value!=='' && value!==null && value!==undefined) {
+      parameters.push({id:Number(parameter.parameterId),value:String(value)});
+    }
+  });
+  return parameters;
+}
+function currentFromCalculation(data) {
+  const value=data && data.configs && data.configs.current!==undefined ? data.configs.current : (data && data.points ? data.points.current : undefined);
+  const current=Number(value);
+  if (!Number.isFinite(current)) throw new ConnectorError('The calculation response did not contain configs.current.','invalid_response');
+  return current;
+}
+async function calculateAll() {
+  if (!selectedProgramSerial) { setStatus('Select a FortiFlex program before calculating.','error'); return; }
+  calculationRunning=true; rows.forEach(row=>{row.calculating=true;row.error='';row.result=null;});
+  document.getElementById('calculate-btn').textContent='Calculating…'; renderRows();
+  let failures=0;
+  let fatalError=null;
+  for (const row of rows) {
+    const productType=productTypeMap.get(Number(row.productTypeId));
+    if (fatalError) { row.error=fatalError.message; row.calculating=false; failures++; continue; }
+    try {
+      const count=Math.max(1,parseInt(row.count,10)||1);
+      const data=await connectorRequest('calculate',{programSerialNumber:selectedProgramSerial,count,productTypeId:Number(row.productTypeId),parameters:buildParameters(row,productType)},30000);
+      const current=currentFromCalculation(data);
+      row.result={current,perDevice:current/count};
+    } catch (error) {
+      failures++; row.error=error.message;
+      if (error.code==='extension_missing' || error.code==='not_configured') fatalError=error;
+    }
+    row.calculating=false; renderRows();
+  }
+  calculationRunning=false; document.getElementById('calculate-btn').textContent='Calculate BOM'; renderRows();
+  if (failures) {
+    const error=fatalError||new ConnectorError(`${failures} line${failures===1?'':'s'} could not be calculated.`,'calculation_failed');
+    setStatus(friendlyError(error,'calculating the BOM'),'error');
+  }
+  else setStatus(`Calculation complete for ${rows.length} line${rows.length===1?'':'s'}. Annual totals use daily line points × 365.`,'success');
+}
+
+function renderPrograms() {
+  const select=document.getElementById('program-select');
+  if (!programs.length) { select.innerHTML='<option value="">No programs found</option>'; selectedProgramSerial=''; }
+  else {
+    if (!programs.some(program=>program.serialNumber===selectedProgramSerial)) selectedProgramSerial=programs[0].serialNumber;
+    select.innerHTML=programs.map(program=>`<option value="${esc(program.serialNumber)}"${program.serialNumber===selectedProgramSerial?' selected':''}>${esc(program.description||program.name||program.serialNumber)}</option>`).join('');
+  }
+  updateControls();
+}
+async function connectAndLoad() {
+  const stateToRestore=pendingState || {rows:rows.map(row=>({productTypeId:row.productTypeId,count:row.count,values:row.values})),selectedProgramSerial};
+  setStatus('Loading the live FortiFlex catalog through the connector…','loading');
+  document.getElementById('catalog-label').textContent='Loading catalog…';
+  try {
+    const connectorData=await connectorRequest('loadCatalog',null,30000);
+    const metadataData=connectorData.metadata||{};
+    const programData=connectorData.programs||{};
+    productTypes=Array.isArray(metadataData.productTypes)?metadataData.productTypes:[];
+    if (!productTypes.length) throw new ConnectorError('FortiFlex returned an empty product catalog.','invalid_response');
+    productTypes.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+    productTypeMap=new Map(productTypes.map(item=>[Number(item.productTypeId),item]));
+    programs=Array.isArray(programData.programs)?programData.programs.filter(program=>program.serialNumber):[];
+    selectedProgramSerial=stateToRestore.selectedProgramSerial||selectedProgramSerial;
+    rows=restoreRows(stateToRestore.rows);
+    if (!rows.length) {
+      const preferred=productTypes.find(item=>/FortiGate Hardware/i.test(item.name||'')) || productTypes[0];
+      rows=[createRow(preferred)];
+    }
+    pendingState=null; renderPrograms(); renderRows(); await savePluginState();
+    connectorAvailable=true; connectorConfigured=true; updateConnectorUI();
+    document.getElementById('catalog-label').textContent=`${productTypes.length} product families`;
+    setStatus(programs.length?`Connected to FortiFlex. Loaded ${productTypes.length} product families and ${programs.length} program${programs.length===1?'':'s'}.`:`Catalog loaded, but this account returned no FortiFlex programs. Calculation is unavailable.` ,programs.length?'success':'error');
+  } catch (error) {
+    if (error.code==='extension_missing') connectorAvailable=false;
+    if (error.code==='not_configured') connectorConfigured=false;
+    updateConnectorUI();
+    pendingState=stateToRestore;
+    productTypes=[]; productTypeMap=new Map(); programs=[]; rows=[]; selectedProgramSerial='';
+    renderPrograms(); renderRows(); document.getElementById('catalog-label').textContent='Catalog unavailable';
+    setStatus(friendlyError(error,'loading the FortiFlex catalog'),'error');
+  }
+}
+
+function updateConnectorUI() {
+  const badge=document.getElementById('credential-badge');
+  const modalState=document.getElementById('connector-modal-state');
+  if (!connectorAvailable) {
+    badge.textContent='Connector missing'; badge.className='br br-amber';
+    modalState.textContent=location.protocol==='file:'
+      ? 'This calculator is open as a local file. Reload extension version 0.1.4, enable “Allow access to file URLs” on its Details page, refresh this tab, then choose Try again.'
+      : 'The FortiFlex API Connector extension was not detected. Install or enable it, refresh this page, then choose Try again.';
+    modalState.className='api-status error';
+  } else if (!connectorConfigured) {
+    badge.textContent='API not configured'; badge.className='br br-amber';
+    modalState.textContent='The connector is installed, but no FortiFlex credential is saved. Open extension settings to continue.';
+    modalState.className='api-status';
+  } else {
+    badge.textContent='Connector ready'; badge.className='br br-green';
+    modalState.textContent='The connector is installed and has a browser-local FortiFlex credential.';
+    modalState.className='api-status success';
+  }
+}
+async function detectConnector(connect=true) {
+  try {
+    const status=await connectorRequest('status',null,3000);
+    connectorAvailable=true; connectorConfigured=Boolean(status&&status.configured); updateConnectorUI();
+    if (connectorConfigured && connect) await connectAndLoad();
+    else if (!connectorConfigured) setStatus('The connector is installed. Open its settings and add your FortiFlex credentials.','info');
+  } catch (error) {
+    connectorAvailable=false; connectorConfigured=false; updateConnectorUI();
+    setStatus(friendlyError(error,'connecting to FortiFlex'),'error');
+  }
+}
+function openSettings() { closeFloatingMenus(); document.getElementById('settings-modal').classList.add('on'); updateConnectorUI(); }
+function closeSettings() { document.getElementById('settings-modal').classList.remove('on'); }
+async function openExtensionSettings() {
+  try { await connectorRequest('openOptions',null,3000); }
+  catch (error) { setStatus(friendlyError(error,'opening connector settings'),'error'); openSettings(); }
+}
+
+function floatingMenuFor(picker) {
+  if (picker.classList.contains('addon-picker')) return picker.querySelector('.addon-menu');
+  if (picker.classList.contains('param-picker')) return picker.querySelector('.param-menu');
+  return picker.querySelector('.search-select-menu');
+}
+function floatingAnchorFor(picker) {
+  if (picker.classList.contains('addon-picker')) return picker.querySelector('.addon-trigger');
+  if (picker.classList.contains('param-picker')) return picker.querySelector('.param-trigger');
+  return picker.querySelector('.search-input-wrap');
+}
+function closeFloatingPicker(picker) {
+  picker.classList.remove('open');
+  const input=picker.querySelector('.search-select-input');
+  if (input) input.setAttribute('aria-expanded','false');
+}
+function closeFloatingMenus(except=null) {
+  document.querySelectorAll('.addon-picker.open,.param-picker.open,.search-select.open').forEach(item=>{
+    if (item===except || (except && item.contains(except)) || (except && except.contains(item))) return;
+    closeFloatingPicker(item);
+  });
+}
+function positionFloatingMenu(picker) {
+  const anchor=floatingAnchorFor(picker), menu=floatingMenuFor(picker);
+  if (!anchor || !menu || !picker.classList.contains('open')) return;
+  const margin=8, gap=4, rect=anchor.getBoundingClientRect();
+  menu.style.maxHeight=`${Math.max(140,Math.min(360,window.innerHeight-margin*2))}px`;
+  if (picker.classList.contains('search-select')) menu.style.minWidth=`${Math.max(220,rect.width)}px`;
+  const menuRect=menu.getBoundingClientRect();
+  let left=picker.classList.contains('param-picker') ? rect.right-menuRect.width : rect.left;
+  left=Math.max(margin,Math.min(left,window.innerWidth-menuRect.width-margin));
+  let top=rect.bottom+gap;
+  if (top+menuRect.height>window.innerHeight-margin) top=Math.max(margin,rect.top-menuRect.height-gap);
+  menu.style.left=`${Math.round(left)}px`;
+  menu.style.top=`${Math.round(top)}px`;
+}
+function openFloatingPicker(picker) {
+  closeFloatingMenus(picker);
+  picker.classList.add('open');
+  const input=picker.querySelector('.search-select-input');
+  if (input) input.setAttribute('aria-expanded','true');
+  positionFloatingMenu(picker);
+}
+function filterSearchOptions(picker,term) {
+  const query=String(term||'').trim().toLowerCase();
+  let visible=0;
+  picker.querySelectorAll('.search-option').forEach(option=>{
+    const matches=!query || String(option.dataset.search||'').includes(query);
+    option.hidden=!matches;
+    if (matches) visible++;
+  });
+  const empty=picker.querySelector('.menu-empty');
+  if (empty) empty.hidden=visible>0;
+  positionFloatingMenu(picker);
+}
+function filterAddonOptions(picker,term) {
+  const query=String(term||'').trim().toLowerCase();
+  let visible=0;
+  picker.querySelectorAll('[data-addon-choice]').forEach(choice=>{
+    const matches=!query || String(choice.dataset.search||'').includes(query);
+    choice.hidden=!matches;
+    if (matches) visible++;
+  });
+  const empty=picker.querySelector('[data-addon-empty]');
+  if (empty) empty.hidden=visible>0;
+  positionFloatingMenu(picker);
+}
+function selectSearchOption(option) {
+  const picker=option.closest('.search-select'), tr=picker&&picker.closest('tr[data-index]');
+  if (!picker || !tr) return;
+  const index=Number(tr.dataset.index), value=String(option.dataset.optionValue||'');
+  if (picker.dataset.targetField==='productTypeId') {
+    const productType=productTypeMap.get(Number(value));
+    if (!productType) return;
+    const count=rows[index].count;
+    rows[index]=createRow(productType); rows[index].count=count;
+  } else if (picker.dataset.targetParamId!==undefined) {
+    rows[index].values[Number(picker.dataset.targetParamId)]=value;
+    invalidateRow(rows[index]);
+  }
+  renderRows(); savePluginState();
+}
+
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-close-modal]')) { closeSettings(); return; }
+  if (event.target === document.getElementById('settings-modal')) { closeSettings(); return; }
+  const searchOption=event.target.closest('.search-option');
+  if (searchOption) { selectSearchOption(searchOption); return; }
+  const searchToggle=event.target.closest('.search-select-toggle');
+  if (searchToggle) {
+    const picker=searchToggle.closest('.search-select'), input=picker.querySelector('.search-select-input');
+    openFloatingPicker(picker); filterSearchOptions(picker,''); input.focus(); input.select(); return;
+  }
+  const searchInput=event.target.closest('.search-select-input');
+  if (searchInput) {
+    const picker=searchInput.closest('.search-select'), wasOpen=picker.classList.contains('open');
+    openFloatingPicker(picker); filterSearchOptions(picker,wasOpen?searchInput.value:'');
+    if (!wasOpen) searchInput.select();
+    return;
+  }
+  const remove = event.target.closest('[data-remove]');
+  if (remove) {
+    rows.splice(Number(remove.closest('tr').dataset.index),1); renderRows(); savePluginState(); return;
+  }
+  const trigger = event.target.closest('.addon-trigger');
+  if (trigger) {
+    const picker = trigger.closest('.addon-picker');
+    if (picker.classList.contains('open')) closeFloatingPicker(picker);
+    else {
+      openFloatingPicker(picker);
+      const search=picker.querySelector('.addon-search'); if (search) search.focus();
+    }
+    return;
+  }
+  const paramTrigger=event.target.closest('.param-trigger');
+  if (paramTrigger) {
+    const picker=paramTrigger.closest('.param-picker');
+    if (picker.classList.contains('open')) closeFloatingPicker(picker);
+    else openFloatingPicker(picker);
+    return;
+  }
+  if (!event.target.closest('.addon-picker') && !event.target.closest('.param-picker') && !event.target.closest('.search-select')) {
+    closeFloatingMenus();
+  }
+});
+document.addEventListener('input',event=>{
+  if (event.target.matches('.search-select-input')) {
+    const picker=event.target.closest('.search-select');
+    openFloatingPicker(picker); filterSearchOptions(picker,event.target.value); return;
+  }
+  if (event.target.matches('.addon-search')) {
+    filterAddonOptions(event.target.closest('.addon-picker'),event.target.value);
+  }
+});
+document.addEventListener('focusout',event=>{
+  if (!event.target.matches('.search-select-input')) return;
+  const picker=event.target.closest('.search-select'), input=event.target;
+  setTimeout(()=>{
+    if (!picker.isConnected || picker.contains(document.activeElement)) return;
+    input.value=picker.dataset.selectedLabel||''; closeFloatingPicker(picker);
+  },0);
+});
+document.addEventListener('change', event => {
+  if (event.target.id==='program-select') {
+    selectedProgramSerial=event.target.value; rows.forEach(invalidateRow); renderRows(); savePluginState(); return;
+  }
+  const tr = event.target.closest('tr[data-index]'); if (!tr) return;
+  const index = Number(tr.dataset.index), field = event.target.dataset.field;
+  if (field==='productTypeId') {
+    const count=rows[index].count, productType=productTypeMap.get(Number(event.target.value));
+    rows[index]=createRow(productType); rows[index].count=count;
+  } else if (field==='count') {
+    rows[index].count=Math.max(1,parseInt(event.target.value,10)||1); invalidateRow(rows[index]);
+  } else if (event.target.dataset.paramValue!==undefined) {
+    const parameterId=Number(event.target.dataset.paramId), value=event.target.dataset.paramValue;
+    const selected=Array.isArray(rows[index].values[parameterId])?rows[index].values[parameterId]:[];
+    rows[index].values[parameterId]=event.target.checked?[...selected.filter(item=>String(item)!==String(value)),value]:selected.filter(item=>String(item)!==String(value));
+    invalidateRow(rows[index]); renderRows();
+    const reopened=document.querySelector(`tr[data-index="${index}"] .addon-picker`);
+    if (reopened) { openFloatingPicker(reopened); const search=reopened.querySelector('.addon-search'); if (search) search.focus(); }
+    savePluginState(); return;
+  } else if (event.target.dataset.paramId!==undefined) {
+    rows[index].values[Number(event.target.dataset.paramId)]=event.target.value; invalidateRow(rows[index]);
+  }
+  renderRows(); savePluginState();
+});
+
+document.getElementById('settings-btn').addEventListener('click',openSettings);
+document.getElementById('add-row-btn').addEventListener('click',() => {
+  if (!productTypes.length) return;
+  rows.push(createRow(productTypes[0]));
+  renderRows(); savePluginState();
+});
+document.getElementById('calculate-btn').addEventListener('click',calculateAll);
+document.getElementById('import-btn').addEventListener('click',() => showToast('Spreadsheet import is not implemented yet; add rows manually.'));
+document.getElementById('open-extension-btn').addEventListener('click',openExtensionSettings);
+document.getElementById('retry-connector-btn').addEventListener('click',async()=>{
+  const button=document.getElementById('retry-connector-btn'); button.disabled=true; button.textContent='Checking…';
+  await detectConnector(true); button.disabled=false; button.textContent='Try again';
+});
+document.addEventListener('keydown',event => {
+  const searchInput=event.target.closest&&event.target.closest('.search-select-input');
+  if (searchInput) {
+    const picker=searchInput.closest('.search-select');
+    if (event.key==='Escape') {
+      searchInput.value=picker.dataset.selectedLabel||''; closeFloatingPicker(picker); searchInput.blur(); event.preventDefault(); return;
+    }
+    if (event.key==='Enter') {
+      const visible=[...picker.querySelectorAll('.search-option')].filter(option=>!option.hidden);
+      if (visible.length===1) { visible[0].click(); event.preventDefault(); }
+      return;
+    }
+    if (event.key==='ArrowDown') {
+      const visible=[...picker.querySelectorAll('.search-option')].filter(option=>!option.hidden);
+      if (visible.length) { visible[0].focus(); event.preventDefault(); }
+      return;
+    }
+  }
+  if (event.key === 'Escape') { closeFloatingMenus(); closeSettings(); }
+});
+window.addEventListener('resize',()=>closeFloatingMenus());
+document.querySelector('.plugin-scroll').addEventListener('scroll',()=>closeFloatingMenus(),{passive:true});
+
+(async function init() {
+  clearLegacyCredentialStore();
+  pendingState=await loadPluginState();
+  updateConnectorUI(); renderPrograms(); renderRows();
+  await detectConnector(true);
+})();
+</script>
+</body>
+</html>

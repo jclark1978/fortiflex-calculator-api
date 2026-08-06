@@ -1,0 +1,23 @@
+# Never commit credentials or local secrets.
+**/*credential*
+**/*Credential*
+**/*secret*
+**/*Secret*
+**/*token*
+**/*Token*
+*.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+
+# Local and generated files.
+.DS_Store
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+*.zip

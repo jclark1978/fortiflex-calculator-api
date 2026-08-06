@@ -1,0 +1,366 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "",
+        "version": "V1-oas3",
+        "title": "FortiFlex API V2.0"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/support.fortinet.com\/es\/api\/fortiflex\/v2",
+            "description": "Production server for FortiFlex external API"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Tools",
+            "description": "APIs to work with FortiFlex tools"
+        }
+    ],
+    "definitions": {
+        "commonResponseFields": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "paramsArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#\/definitions\/parameterItem"
+            }
+        },
+        "parameterItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "metadataProductTypesArray": {
+            "type": "object",
+            "properties": {
+                "productTypes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/metadataProductTypeItem"
+                    }
+                }
+            }
+        },
+        "metadataProductTypeItem": {
+            "type": "object",
+            "properties": {
+                "productTypeId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "formFactor": {
+                    "$ref": "#\/definitions\/metadataFormFactor"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/metadataParameterItem"
+                    }
+                }
+            }
+        },
+        "metadataFormFactor": {
+            "type": "object",
+            "properties": {
+                "formFactorId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "metadataParameterItem": {
+            "type": "object",
+            "properties": {
+                "parameterId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "NUMERIC",
+                        "SINGLEVALUE",
+                        "MULTIVALUE",
+                        "READONLY"
+                    ]
+                },
+                "minValue": {
+                    "type": "integer",
+                    "nullable": true
+                },
+                "maxValue": {
+                    "type": "integer",
+                    "nullable": true
+                },
+                "step": {
+                    "type": "integer",
+                    "nullable": true
+                },
+                "validValues": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/metadataValidValueItem"
+                    }
+                }
+            }
+        },
+        "metadataValidValueItem": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "\/tools\/calc": {
+            "post": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "Calculate points consumption",
+                "operationId": "GetCalcRequest",
+                "description": "Returns the number of points that will be consumed for a Configuration with certain parameters. \"count\" should be 1 if the product type is a Cloud form factor.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "points": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "current": {
+                                                            "type": "number"
+                                                        },
+                                                        "latest": {
+                                                            "type": "number"
+                                                        },
+                                                        "latestEffectiveDate": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "points": {
+                                            "current": 4,
+                                            "latest": 2.92,
+                                            "latestEffectiveDate": "2024-08-01 10:12:25"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    },
+                                    "count": {
+                                        "type": "integer"
+                                    },
+                                    "productTypeId": {
+                                        "type": "integer"
+                                    },
+                                    "parameters": {
+                                        "$ref": "#\/definitions\/paramsArray"
+                                    }
+                                },
+                                "example": {
+                                    "programSerialNumber": "ELAVMR0000000101",
+                                    "count": 3,
+                                    "productTypeId": 1,
+                                    "parameters": [
+                                        {
+                                            "id": 1,
+                                            "value": "4"
+                                        },
+                                        {
+                                            "id": 2,
+                                            "value": "UTM"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/tools\/metadata": {
+            "post": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "Get product type metadata",
+                "operationId": "GetMetadataRequest",
+                "description": "Returns product types, form factors, parameters, and valid parameter values that can be used when creating or calculating FortiFlex configurations.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/metadataProductTypesArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully.",
+                                        "error": null,
+                                        "productTypes": [
+                                            {
+                                                "productTypeId": 1,
+                                                "name": "FortiGate Virtual Machine - Service Bundle",
+                                                "formFactor": {
+                                                    "formFactorId": 1,
+                                                    "name": "Virtual Machines"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "parameterId": 1,
+                                                        "name": "Number of CPUs",
+                                                        "type": "NUMERIC",
+                                                        "minValue": 1,
+                                                        "maxValue": 96,
+                                                        "step": 1,
+                                                        "validValues": []
+                                                    },
+                                                    {
+                                                        "parameterId": 2,
+                                                        "name": "Service Package",
+                                                        "type": "SINGLEVALUE",
+                                                        "minValue": null,
+                                                        "maxValue": null,
+                                                        "step": null,
+                                                        "validValues": [
+                                                            {
+                                                                "value": "FC",
+                                                                "description": "FortiCare Premium"
+                                                            },
+                                                            {
+                                                                "value": "UTP",
+                                                                "description": "UTP"
+                                                            },
+                                                            {
+                                                                "value": "ENT",
+                                                                "description": "Enterprise"
+                                                            },
+                                                            {
+                                                                "value": "ATP",
+                                                                "description": "ATP"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "parameterId": 43,
+                                                        "name": "FortiGuard Services",
+                                                        "type": "MULTIVALUE",
+                                                        "minValue": null,
+                                                        "maxValue": null,
+                                                        "step": null,
+                                                        "validValues": [
+                                                            {
+                                                                "value": "FGTAVDB",
+                                                                "description": "Advanced Malware Protection"
+                                                            },
+                                                            {
+                                                                "value": "FGTFAIS",
+                                                                "description": "AI-Based In-line Sandbox"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "parameterId": 87,
+                                                        "name": "Queries per Second",
+                                                        "type": "READONLY",
+                                                        "minValue": null,
+                                                        "maxValue": null,
+                                                        "step": null,
+                                                        "validValues": []
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": [],
+                                "example": []
+                            }
+                        }
+                    },
+                    "description": "No request body needed"
+                }
+            }
+        }
+    }
+}

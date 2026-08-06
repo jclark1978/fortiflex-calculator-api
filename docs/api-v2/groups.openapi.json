@@ -1,0 +1,308 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "",
+        "version": "V1-oas3",
+        "title": "FortiFlex API V2.0"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/support.fortinet.com\/es\/api\/fortiflex\/v2",
+            "description": "Production server for FortiFlex external API"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "commonResponseFields": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "programArray": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/programArrayItem"
+                }
+            },
+            "programArrayItem": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer"
+                    },
+                    "serialNumber": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "hasSupportCoverage": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Groups",
+            "description": "APIs to work with FortiFlex groups (asset folders)"
+        }
+    ],
+    "definitions": {
+        "commonResponseFields": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "entitlementsArray": {
+            "type": "object",
+            "properties": {
+                "entitlements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/entitlementItem"
+                    }
+                }
+            }
+        },
+        "entitlementItem": {
+            "type": "object",
+            "properties": {
+                "serialNumber": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "configId": {
+                    "type": "integer"
+                },
+                "accountId": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "endDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "tokenStatus": {
+                    "type": "string"
+                }
+            }
+        },
+        "groupsArray": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/groupItem"
+                    }
+                }
+            }
+        },
+        "groupItem": {
+            "type": "object",
+            "properties": {
+                "folderPath": {
+                    "type": "string"
+                },
+                "accountId": {
+                    "type": "integer"
+                },
+                "availableTokens": {
+                    "type": "integer"
+                },
+                "usedTokens": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "paths": {
+        "\/groups\/list": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Get list of FortiFlex groups (asset folders)",
+                "operationId": "GetGroupsListRequest",
+                "description": "Returns list of FortiFlex groups (asset folders that have FortiFlex products in them)",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/groupsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "groups": [
+                                            {
+                                                "folderPath": "My Assets\/Department A\/FortiFlex Group 1",
+                                                "accountId": 12345,
+                                                "availableTokens": 5,
+                                                "usedTokens": 22
+                                            },
+                                            {
+                                                "folderPath": "My Assets\/Department A\/FortiFlex Group 2",
+                                                "accountId": 12345,
+                                                "availableTokens": 15,
+                                                "usedTokens": 3
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "accountId": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "accountId": 12345
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/groups\/nexttoken": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Get next available (unused) token",
+                "operationId": "GetGroupNextTokenRequest",
+                "description": "Returns first available token by asset folder or Configuration id (folder path, or config id or both can be specified in request)",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/entitlementsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "entitlements": [
+                                            {
+                                                "serialNumber": "FGVMELTM20000020",
+                                                "description": "VMs created for department A",
+                                                "configId": 22,
+                                                "accountId": 12345,
+                                                "startDate": "2020-08-01 10:12:25",
+                                                "endDate": "2020-10-25 00:00:00",
+                                                "status": "ACTIVE",
+                                                "token": "5965C5CC99D32D3B9A53",
+                                                "tokenStatus": "NOTUSED"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "folderPath": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "integer"
+                                    },
+                                    "status": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "configId": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "accountId": 12345,
+                                    "folderPath": "My Assets\/Department A\/FortiFlex Group 1",
+                                    "configId": 12,
+                                    "status": [
+                                        "ACTIVE",
+                                        "PENDING"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "description": "Returns error if there are no available (unused) tokens in the group. vms\/token API can be called to change a token back to unused status."
+                }
+            }
+        }
+    }
+}

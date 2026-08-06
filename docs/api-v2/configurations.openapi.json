@@ -1,0 +1,588 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "",
+        "version": "V1-oas3",
+        "title": "FortiFlex API V2.0"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/support.fortinet.com\/es\/api\/fortiflex\/v2",
+            "description": "Production server for FortiFlex external API"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "commonResponseFields": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "programArray": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/programArrayItem"
+                }
+            },
+            "programArrayItem": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer"
+                    },
+                    "serialNumber": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "hasSupportCoverage": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Configurations",
+            "description": "APIs to work with FortiFlex Configurations"
+        }
+    ],
+    "definitions": {
+        "commonResponseFields": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "configsArray": {
+            "type": "object",
+            "properties": {
+                "configs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#\/definitions\/configItem"
+                    }
+                }
+            }
+        },
+        "configItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "programSerialNumber": {
+                    "type": "string"
+                },
+                "accountId": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "productType": {
+                    "$ref": "#\/definitions\/productType"
+                },
+                "parameters": {
+                    "$ref": "#\/definitions\/paramsArray"
+                }
+            }
+        },
+        "paramsArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#\/definitions\/parameterItem"
+            }
+        },
+        "parameterItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "productType": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "\/configs\/list": {
+            "post": {
+                "tags": [
+                    "Configurations"
+                ],
+                "summary": "Get list of Configurations for a Program",
+                "operationId": "GetConfigListRequest",
+                "description": "accountId in request payload is optional. When not provided, the API returns all Configurations of all tenant accounts under the organization (program serial number registered to root account).",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/configsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "configs": [
+                                            {
+                                                "id": 21,
+                                                "name": "Configuration Name",
+                                                "programSerialNumber": "ELAVMR0000000101",
+                                                "accountId": 12345,
+                                                "status": "ACTIVE",
+                                                "productType": {
+                                                    "id": 1,
+                                                    "name": "FortiGate VM"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "id": 1,
+                                                        "name": "CPU",
+                                                        "value": "4"
+                                                    },
+                                                    {
+                                                        "id": 2,
+                                                        "name": "SERVICEPACK",
+                                                        "value": "UTM"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "programSerialNumber": "ELAVMR0000000101",
+                                    "accountId": 12345
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/configs\/create": {
+            "post": {
+                "tags": [
+                    "Configurations"
+                ],
+                "summary": "Create a new Configuration under a Program",
+                "operationId": "CreateConfigRequest",
+                "description": "accountId in request payload is optional.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/configsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "configs": [
+                                            {
+                                                "id": 22,
+                                                "name": "Test Configuration",
+                                                "programSerialNumber": "ELAVMR0000000101",
+                                                "accountId": 12345,
+                                                "status": "ACTIVE",
+                                                "productType": {
+                                                    "id": 1,
+                                                    "name": "FortiGate VM"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "id": 1,
+                                                        "name": "CPU",
+                                                        "value": "4"
+                                                    },
+                                                    {
+                                                        "id": 2,
+                                                        "name": "SERVICEPACK",
+                                                        "value": "UTM"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "programSerialNumber": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "productTypeId": {
+                                        "type": "integer"
+                                    },
+                                    "parameters": {
+                                        "$ref": "#\/definitions\/paramsArray"
+                                    }
+                                },
+                                "example": {
+                                    "programSerialNumber": "ELAVMR0000000101",
+                                    "accountId": 12345,
+                                    "name": "Test Configuration",
+                                    "productTypeId": 1,
+                                    "parameters": [
+                                        {
+                                            "id": 1,
+                                            "value": "4"
+                                        },
+                                        {
+                                            "id": 2,
+                                            "value": "UTM"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/configs\/update": {
+            "post": {
+                "tags": [
+                    "Configurations"
+                ],
+                "summary": "Modify a Configuration's name or parameters",
+                "operationId": "UpdateConfigRequest",
+                "description": "NOTE: UPDATING A CONFIGURATION'S PARAMETERS SUCH AS NUMBER OF CPUS, WILL AFFECT ALL ENTITLEMENTS CREATED BASED ON IT.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/configsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "configs": [
+                                            {
+                                                "id": 22,
+                                                "name": "New Configuration name",
+                                                "programSerialNumber": "ELAVMR0000000101",
+                                                "accountId": 12345,
+                                                "status": "ACTIVE",
+                                                "productType": {
+                                                    "id": 1,
+                                                    "name": "FortiGate VM"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "id": 1,
+                                                        "name": "CPU",
+                                                        "value": "8"
+                                                    },
+                                                    {
+                                                        "id": 2,
+                                                        "name": "SERVICEPACK",
+                                                        "value": "360"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "parameters": {
+                                        "$ref": "#\/definitions\/paramsArray"
+                                    }
+                                },
+                                "example": {
+                                    "id": 22,
+                                    "name": "New Configuration name",
+                                    "parameters": [
+                                        {
+                                            "id": 1,
+                                            "value": "8"
+                                        },
+                                        {
+                                            "id": 2,
+                                            "value": "360"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/configs\/disable": {
+            "post": {
+                "tags": [
+                    "Configurations"
+                ],
+                "summary": "Disable a Configuration",
+                "operationId": "DisableConfigRequest",
+                "description": "NOTE: DISABLING A CONFIGURATION WILL AFFECT ALL ENTITLEMENTS CREATED BASED ON IT.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/configsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "configs": [
+                                            {
+                                                "id": 22,
+                                                "name": "Configuration name",
+                                                "programSerialNumber": "ELAVMR0000000101",
+                                                "accountId": 12345,
+                                                "status": "DISABLED",
+                                                "productType": {
+                                                    "id": 1,
+                                                    "name": "FortiGate VM"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "id": 1,
+                                                        "name": "CPU",
+                                                        "value": "8"
+                                                    },
+                                                    {
+                                                        "id": 2,
+                                                        "name": "SERVICEPACK",
+                                                        "value": "360"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "id": 22
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        },
+        "\/configs\/enable": {
+            "post": {
+                "tags": [
+                    "Configurations"
+                ],
+                "summary": "Enable a Configuration",
+                "operationId": "EnableConfigRequest",
+                "description": "NOTE: ENABLING A CONFIGURATION WILL AFFECT ALL ENTITLEMENTS CREATED BASED ON IT.",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "allOf": [
+                                        {
+                                            "$ref": "#\/definitions\/commonResponseFields"
+                                        },
+                                        {
+                                            "$ref": "#\/definitions\/configsArray"
+                                        }
+                                    ],
+                                    "example": {
+                                        "status": 0,
+                                        "message": "Request processed successfully",
+                                        "error": null,
+                                        "configs": [
+                                            {
+                                                "id": 22,
+                                                "name": "Configuration name",
+                                                "programSerialNumber": "ELAVMR0000000101",
+                                                "accountId": 12345,
+                                                "status": "ACTIVE",
+                                                "productType": {
+                                                    "id": 1,
+                                                    "name": "FortiGate VM"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "id": 1,
+                                                        "name": "CPU",
+                                                        "value": "8"
+                                                    },
+                                                    {
+                                                        "id": 2,
+                                                        "name": "SERVICEPACK",
+                                                        "value": "360"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "example": {
+                                    "id": 22
+                                }
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            }
+        }
+    }
+}
