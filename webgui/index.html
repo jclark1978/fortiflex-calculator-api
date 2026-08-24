@@ -11,7 +11,7 @@
   "name": "FortiFlex BOM Calculator",
   "category": "Licensing",
   "icon": "chart",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Build table-based FortiFlex point estimates with browser-local credentials"
 }
 </script>
@@ -73,7 +73,9 @@ select.fi { cursor:pointer; }
 
 .bt-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 table.bt { width:100%; border-collapse:collapse; font-size:12px; }
-table.bt thead th { background:var(--c-th); border:1px solid var(--c-border); padding:6px 9px; text-align:left; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#4A5268; white-space:nowrap; }
+table.bt thead th { background:var(--c-th); border:1px solid var(--c-border); padding:6px 9px; text-align:left; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#4A5268; white-space:nowrap; position:relative; overflow:hidden; text-overflow:ellipsis; }
+.col-resizer { position:absolute; top:0; right:-4px; width:8px; height:100%; cursor:col-resize; z-index:5; touch-action:none; }
+.col-resizer:hover, .col-resizer.resizing { background:rgba(238,49,36,.35); }
 table.bt tbody td { border:1px solid var(--c-border); padding:7px 8px; vertical-align:middle; font-size:12px; }
 table.bt tbody tr.bt-even td { background:var(--c-sh); }
 table.bt tbody tr.data-row:hover td { background:#EEF1F6; }
@@ -291,6 +293,7 @@ table.bt select.model { min-width:165px; }
     <div class="table-ftr">
       <button class="btn btn-sm bs" type="button" id="add-row-btn">+ Add line</button>
       <button class="btn btn-sm bp" type="button" id="bulk-edit-btn" hidden>Bulk edit selected</button>
+      <button class="btn btn-sm bd" type="button" id="delete-selected-btn" hidden>Delete selected</button>
       <span class="hint">Catalog choices come from FortiFlex API v2 metadata.</span>
     </div>
   </div>
@@ -393,6 +396,9 @@ let unmatchedEntries = [];
 let sortState = {key:'',direction:'asc'};
 let selectedRows = new Set();
 let bulkDraft = null;
+
+const COL_WIDTHS_KEY = 'fortiflex_bom_col_widths_v1';
+const DEFAULT_COL_WIDTHS = [66,34,190,90,210,190,230,160,150,150,50];
 
 function esc(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -744,19 +750,19 @@ function activeSelectedRows() {
   selectedRows.forEach(row=>{ if (!rows.includes(row)) selectedRows.delete(row); });
   return rows.filter(row=>selectedRows.has(row));
 }
-function selectedFamilyId() {
-  const selected=activeSelectedRows();
-  return selected.length ? Number(selected[0].productTypeId) : null;
-}
 function toggleRowSelection(index,checked) {
   const row=rows[index]; if (!row) return;
-  const familyId=selectedFamilyId();
-  if (checked && familyId!==null && familyId!==Number(row.productTypeId)) {
-    showToast('Bulk selection is limited to one product family at a time.');
-    renderRows(); return;
-  }
   if (checked) selectedRows.add(row); else selectedRows.delete(row);
   renderRows();
+}
+function deleteSelectedRows() {
+  const selected=activeSelectedRows();
+  if (!selected.length) return;
+  const count=selected.length;
+  rows=rows.filter(row=>!selectedRows.has(row));
+  selectedRows.clear();
+  renderRows(); savePluginState();
+  showToast(`Removed ${count} selected line${count===1?'':'s'}.`);
 }
 function bulkParameterControl(parameter) {
   const value=bulkDraft.values[parameter.parameterId]||'';
@@ -788,6 +794,11 @@ function bulkExtrasPicker(productType) {
 function openBulkEditor() {
   const selected=activeSelectedRows();
   if (selected.length<2) return;
+  const familyIds=new Set(selected.map(row=>Number(row.productTypeId)));
+  if (familyIds.size>1) {
+    showToast('Bulk edit needs selected lines from a single product family. Deselect the others, or use Delete selected.');
+    return;
+  }
   bulkDraft={productTypeId:Number(selected[0].productTypeId),values:{},addons:new Set(),addonMode:'add'};
   renderBulkModal();
   document.getElementById('bulk-modal').classList.add('on');
@@ -821,13 +832,17 @@ function applyBulkChanges() {
   closeBulkEditor(); renderRows(); savePluginState();
   showToast(`Changes applied to ${selected.length} selected ${productType.name||'device'} lines.`);
 }
-function updateBulkEditButton() {
-  const button=document.getElementById('bulk-edit-btn');
+function updateSelectionButtons() {
   const selected=activeSelectedRows();
-  const ready=selected.length>1;
-  button.hidden=!ready;
-  button.textContent=`Bulk edit ${selected.length} selected`;
-  button.disabled=!ready || calculationRunning;
+  const bulkButton=document.getElementById('bulk-edit-btn');
+  const bulkReady=selected.length>1;
+  bulkButton.hidden=!bulkReady;
+  bulkButton.textContent=`Bulk edit ${selected.length} selected`;
+  bulkButton.disabled=!bulkReady || calculationRunning;
+  const deleteButton=document.getElementById('delete-selected-btn');
+  deleteButton.hidden=!selected.length;
+  deleteButton.textContent=`Delete ${selected.length} selected`;
+  deleteButton.disabled=!selected.length || calculationRunning;
 }
 function renderRows() {
   const tbody=document.getElementById('bom-rows');
@@ -856,7 +871,7 @@ function renderRows() {
   }
   const badge=document.getElementById('line-badge');
   badge.textContent=rows.length; badge.className='cnt-badge'+(rows.length?'':' zero');
-  renderSummary(); updateBulkEditButton(); renderSortHeaders(); updateControls();
+  renderSummary(); updateSelectionButtons(); renderSortHeaders(); updateControls();
 }
 function renderSummary() {
   const devices=rows.reduce((sum,row)=>sum+Number(row.count),0);
@@ -1104,6 +1119,64 @@ function selectSearchOption(option) {
   renderRows(); savePluginState();
 }
 
+function loadColumnWidths() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY));
+    return Array.isArray(stored) ? stored : null;
+  } catch { return null; }
+}
+function saveColumnWidths(widths) {
+  try { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(widths)); } catch { /* Ignore unavailable storage. */ }
+}
+function initColumnResize() {
+  const table = document.querySelector('table.bt');
+  const headerCells = [...table.querySelectorAll('thead th')];
+  const stored = loadColumnWidths();
+  const cols = headerCells.map((th, index) => {
+    const width = (stored && Number.isFinite(stored[index]) ? stored[index] : DEFAULT_COL_WIDTHS[index]) || 80;
+    const col = document.createElement('col');
+    col.style.width = `${width}px`;
+    return col;
+  });
+  const colgroup = document.createElement('colgroup');
+  cols.forEach(col => colgroup.appendChild(col));
+  table.insertBefore(colgroup, table.firstChild);
+  table.style.tableLayout = 'fixed';
+  function applyTableMinWidth() {
+    const total = cols.reduce((sum, col) => sum + parseFloat(col.style.width), 0);
+    table.style.minWidth = `${Math.round(total)}px`;
+  }
+  applyTableMinWidth();
+  headerCells.forEach((th, index) => {
+    if (index === headerCells.length - 1) return; // Last column has nothing to its right to resize against.
+    const handle = document.createElement('span');
+    handle.className = 'col-resizer';
+    handle.setAttribute('aria-hidden', 'true');
+    th.appendChild(handle);
+    handle.addEventListener('mousedown', event => {
+      event.preventDefault(); event.stopPropagation();
+      const startX = event.clientX;
+      const startWidth = parseFloat(cols[index].style.width) || DEFAULT_COL_WIDTHS[index] || 80;
+      handle.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      function onMove(moveEvent) {
+        const next = Math.max(32, startWidth + (moveEvent.clientX - startX));
+        cols[index].style.width = `${Math.round(next)}px`;
+        applyTableMinWidth();
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        handle.classList.remove('resizing');
+        document.body.style.cursor = '';
+        saveColumnWidths(cols.map(col => parseFloat(col.style.width)));
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
 document.addEventListener('click', event => {
   if (event.target.closest('[data-close-modal]')) { closeSettings(); return; }
   if (event.target.closest('[data-close-import]')) { closeImport(); return; }
@@ -1218,6 +1291,7 @@ document.getElementById('calculate-btn').addEventListener('click',calculateAll);
 document.getElementById('import-btn').addEventListener('click',openImport);
 document.getElementById('apply-import-btn').addEventListener('click',applyPastedDeviceList);
 document.getElementById('bulk-edit-btn').addEventListener('click',openBulkEditor);
+document.getElementById('delete-selected-btn').addEventListener('click',deleteSelectedRows);
 document.getElementById('apply-bulk-btn').addEventListener('click',applyBulkChanges);
 document.getElementById('clear-selection-btn').addEventListener('click',()=>{ selectedRows.clear(); renderRows(); });
 document.getElementById('review-import-btn').addEventListener('click',openImport);
@@ -1252,6 +1326,7 @@ document.querySelector('.plugin-scroll').addEventListener('scroll',()=>closeFloa
 
 (async function init() {
   clearLegacyCredentialStore();
+  initColumnResize();
   pendingState=await loadPluginState();
   unmatchedEntries=Array.isArray(pendingState&&pendingState.unmatchedEntries)?pendingState.unmatchedEntries.filter(item=>item&&item.label):[];
   renderUnmatched();
